@@ -49,6 +49,6 @@ quote-style = "single"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-pythonpath = "./dialog_backend"
-DJANGO_SETTINGS_MODULE = "dialog_backend.settings"
+pythonpath = "./db_project"
+DJANGO_SETTINGS_MODULE = "db_project.settings"
 python_files = "tests.py test_*.py *_tests.py"
