@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: poetry run python3 manage.py runserver 0.0.0.0:8040
+    command: poetry run python3 manage.py runserver 0.0.0.0:8050
     volumes:
       - ./:/home/django/db_project
     ports:
@@ -27,7 +27,7 @@ services:
 
   redis:
     image: redis:7
-    container_name: redis_cache
+    container_name: db_project_redis_cache
     restart: always
     networks:
       - db_project_network
