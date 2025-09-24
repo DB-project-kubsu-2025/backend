@@ -1,0 +1,43 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: poetry run python3 manage.py runserver 0.0.0.0:8040
+    volumes:
+      - ./:/home/django/db_project
+    ports:
+      - "8040:8040"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - db_project_network
+
+  postgres:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql@14/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-1234}
+      - POSTGRES_DB=${POSTGRES_DB:-db_project_postgres}
+    networks:
+      - db_project_network
+
+  redis:
+    image: redis:7
+    container_name: redis_cache
+    restart: always
+    networks:
+      - db_project_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  db_project_network:
+    external: true
