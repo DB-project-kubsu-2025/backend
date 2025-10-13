@@ -7,7 +7,7 @@ services:
     volumes:
       - ./:/home/django/db_project
     ports:
-      - "8040:8040"
+      - "8050:8050"
     depends_on:
       - postgres
       - redis
