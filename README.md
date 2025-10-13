@@ -18,7 +18,15 @@
     ```bash
     docker compose up
     ```
-6. Посмотрите IP своего устройства, далее в браузере перейдите по IP и по порту 8050, URL должен быть примерно такой: `http://192.168.0.90:8050`
+6. Посмотрите IP своего устройства, далее в браузере перейдите по IP и по порту 8050, URL должен быть примерно такой: `http://192.168.0.90:8050/admin`
+7. В терминале выполните следующую команду:
+    ```bash
+    docker exec db_project-app-1 poetry run python3 manage.py migrate
+    ```
+8. Также в терминале запустите еще одну команду:
+    ```bash
+    docker exec db_project-app-1 poetry run python3 manage.py createsuperuser
+    ```
 
 ## Настройка интерпретатора в PyCharm Professional
 1. Settings -> Project -> Python Interpreter -> Add Interpreter -> On docker compose
