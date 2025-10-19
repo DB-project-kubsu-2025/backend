@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     command: poetry run python3 manage.py runserver 0.0.0.0:8050
     volumes:
-      - ./:/home/django/db_project
+      - ./:/home/django/db_project/db_project
     ports:
       - "8050:8050"
     depends_on:
