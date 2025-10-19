@@ -36,6 +36,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+AUTH_USER_MODEL = 'auth_service.Employee'
+
 ROOT_URLCONF = 'db_project.urls'
 
 TEMPLATES = [
