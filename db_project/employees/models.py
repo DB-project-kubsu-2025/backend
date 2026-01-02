@@ -45,7 +45,6 @@ class Employee(AbstractUser, AutoDateMixin):
     work_phone = models.CharField(verbose_name='Рабочий телефон', max_length=11)
     phone = models.CharField(verbose_name='Рабочий телефон', max_length=11, blank=True, default='')
 
-
     class Meta:
         verbose_name = 'Работник'
         verbose_name_plural = 'Работники'
