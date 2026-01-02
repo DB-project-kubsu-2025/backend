@@ -106,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'fit journal API reference',
+    'TITLE': 'db project API reference',
     'SERVE_INCLUDE_SCHEMA': True,
     'SECURITY': [
         {
