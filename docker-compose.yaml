@@ -3,11 +3,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: poetry run python3 manage.py runserver 0.0.0.0:8050
+    command: poetry run python3 manage.py runserver 0.0.0.0:8070
     volumes:
-      - ./:/home/django/db_project/db_project
+      - ./:/home/django/db_project
     ports:
-      - "8050:8050"
+      - "8070:8070"
     depends_on:
       - postgres
       - redis
