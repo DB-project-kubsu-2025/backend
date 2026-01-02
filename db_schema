@@ -1,0 +1,542 @@
+// employees
+
+TableGroup employees {
+  auth_permission
+  auth_group
+  auth_groupemployee
+  employees_workingrate
+  employees_jobposition
+  employees_passport
+  employees_employee
+}
+
+Table auth_permission [note: "Права"] {
+  id integer [primary key]
+  name varchar(150)
+}
+
+Table auth_permissiongroup [note: "Связь группа - права"] {
+  id integer [primary key]
+
+  group_id integer [not null]
+  permission_id integer [not null]
+}
+
+Table auth_group [note: "Группа"] {
+  id integer [primary key]
+  name varchar(150) unique
+}
+
+Table auth_groupemployee [note: "Связь работник - группа"] {
+  id integer [primary key]
+
+  group_id integer [not null]
+  employee_id integer [not null]
+}
+
+Table employees_workingrate [note: "Справочник рабочих ставок"] {
+  id integer [primary key]
+  name varchar(100)
+  monthly_output integer
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table employees_jobposition [note: "Справочние должностей"] {
+  id integer [primary key]
+  name varchar(100)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table employees_passport [note: "Паспорт"] {
+  id integer [primary key]
+  type varchar(10)
+  series varchar(4)
+  number varchar(7)
+  issue_date date
+  issued_by varchar(255)
+  authority_code varchar(7)
+  registration_address varchar(256)
+  residentioal_address varchar(256)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table employees_employee [note: "Сотрудник"] {
+  id integer [primary key]
+  surname varchar(40)
+  first_name varchar(40)
+  second_name varchar(40)
+  gender varchar(1)
+  snils varchar(11)
+  inn varchar(12)
+  phone varchar(15)
+  work_phone varchar(15)
+  email varchar(30)
+  work_email varchar(30)
+  created_at timestamp
+  updated_at timestamp
+
+  passport_id integer [not null]
+  job_position_id integer [not null]
+  working_rate_id integer [not null]
+}
+
+// shops
+
+TableGroup shops {
+  shops_unit
+  shops_category
+  shops_product
+  shops_region
+  shops_city
+  shops_shop
+  shops_spacetype
+  shops_space
+  shops_spaceproduct
+  shops_productmovement
+  shops_pricelisttype
+  shops_pricelist
+  shops_pricing_constraint
+  shops_stoplist
+  shops_stoplisttransferreason
+  shops_stoplistproduct
+  shops_inventory
+  shops_writeoffreason
+  shops_writeoffact
+  shops_sale
+}
+
+Table shops_unit [note: "Справочник единиц измерения"] {
+  id integer [primary key]
+  name varchar(32)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shops_category [note: "Категория продуктов"] {
+  id integer [primary key]
+  name varchar(128)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shops_product [note: "Справочник продуктов"] {
+  id integer [primary key]
+  name varchar(128)
+  description varchar(1024)
+  barcode bytes
+  producer_name varchar(128)
+  producer_code uuid
+  country_name varchar(128)
+  expiration_days_count integer
+  additional_info varchar(1024)
+  created_at timestamp
+  updated_at timestamp
+
+  unit_id integer [not null]
+  category_id integer [not null]
+}
+
+Table shops_region [note: "Справочник регионов"] {
+  id integer [primary key]
+  name varchar(64)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shops_city [note: "Справочник городов"] {
+  id integer [primary key]
+  name varchar(64)
+  created_at timestamp
+  updated_at timestamp
+
+  region_id integer [not null]
+}
+
+Table shops_shop [note: "Магазин"] {
+  id integer [primary key]
+  address varchar(128)
+  approvbed_by_main_company boolean
+  opened boolean
+  created_at timestamp
+  updated_at timestamp
+
+  city_id integer [not null]
+  main_office_filial_id integer [not null]
+  director_id integer [not null]
+}
+
+Table shops_spacetype [note: "Справочник типов помещений"] {
+  id integer [primary key]
+  name varchar(64)
+  slug varchar(64)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shops_space [note: "Помещение в магазине"] {
+  id integer [primary key]
+  created_at timestamp
+  updated_at timestamp
+
+  shop_id integer [not null]
+  space_type_id integer [not null]
+}
+
+Table shops_spaceproduct [note: "Связка продукт - помещение"] {
+  id integer [primary key]
+  quantity integer
+  created_at timestamp
+  updated_at timestamp
+
+  space_id integer [not null]
+  product_id integer [not null]
+}
+
+Table shops_transport [note: "Транспорт компании"] {
+  id integer [primary key]
+  name varchar(100)
+  lifting_capacity integer
+  is_available boolean
+  created_at timestamp
+  updated_at timestamp
+
+  driver_id integer
+}
+
+Table shops_productmovement [note: "Перемещение товара по ТТ"] {
+  id integer [primary key]
+  quantity integer
+  created_at timestamp
+  updated_at timestamp
+
+  product_id integer [not null]
+  space_from_id integer [not null]
+  space_to_id integer [not null]
+  transport_id integer
+  }
+
+Table shops_pricelisttype [note: "Справочник типов прайс-листа"] {
+  id integer [primary key]
+  name varchar(64)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shops_pricelist [note: "Прайслист для продукта в ТТ"] {
+  id integer [primary key]
+  price decimal
+  created_at timestamp
+  updated_at timestamp
+
+  product_id integer [not null]
+  pricelist_type_id integer [not null]
+}
+
+Table shops_pricing_constraint [note: "Ограничения на изменение цены"] {
+  id integer [primary key]
+  is_active boolean
+  max_daily_change_pct integer
+  max_markup_pct integerpri
+  created_at timestamp
+  updated_at timestamp
+
+  pricelist_id integer [not null]
+}
+
+Table shops_stoplist [note: "Стоп-лист для магазина"] {
+  id integer [primary key]
+  created_at timestamp
+  updated_at timestamp
+
+  shop_id integer [not null]
+}
+
+Table shops_stoplisttransferreason [note: "Справочник причин переноса в стоп-лист"] {
+  id integer [primary key]
+  name varchar(512)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shops_stoplistproduct [note: "Связка продукт - стоплист"] {
+  id integer [primary key]
+  is_actual boolean
+  transferred_to_main_company boolean
+  created_at timestamp
+  updated_at timestamp
+
+  stoplist_id integer [not null]
+  product_id integer [not null]
+  stoplist_transfer_reason_id integer [not null]
+}
+
+Table shops_inventory [note: "Инвентаризация в ТТ"] {
+  id integer [primary key]
+  is_completed boolean
+  date date
+  created_at timestamp
+  updated_at timestamp
+
+  shop_id integer [not null]
+}
+
+Table shops_inventoryproduct [note: "Связь продукт - инвентаризация"] {
+  id integer [primary key]
+  quantity_in_stock integer
+  created_at timestamp
+  updated_at timestamp
+
+  product_id integer [not null]
+  inventory_id integer [not null]
+}
+
+Table shops_writeoffreason [note: "Справочник причин списания товара"] {
+  id integer [primary key]
+  name varchar(128)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shops_writeoffact [note: "Акт списания"] {
+  id integer [primary key]
+  approved_by_director boolean
+  quantity integer
+  date date
+  created_at timestamp
+  updated_at timestamp
+
+  shop_id integer [not null]
+  product_id integer [not null]
+  writeoff_reason_id integer [not null]
+  employee_wrote_off integer [not null]
+}
+
+Table shops_sale [note: "Продажа"] {
+  id integer [primary key]
+  created_at timestamp
+  updated_at timestamp
+
+  shop_id integer [not null]
+}
+
+Table shops_saleproduct [note: "Связь продукт - продажа"] {
+  id integer [primary key]
+  quantity integer
+  price integer
+  created_at timestamp
+  updated_at timestamp
+
+  sale_id integer [not null]
+  product_id integer [not null]
+}
+
+// supplies
+
+TableGroup supplies {
+  supplies_supplier
+  supplies_suppliercontact
+  supplies_supplycontract
+  supplies_supplycontractproduct
+  supplies_supply
+  supplies_supplyproduct
+}
+
+Table supplies_supplier [note: "Поставщик"] {
+  id integer [primary key]
+  name varchar(256)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table supplies_suppliercontact [note: "Контактное лицо поставщика"] {
+  id integer [primary key]
+  surname varchar(40)
+  first_name varchar(40)
+  second_name varchar(40)
+  phone varchar(15)
+  email varchar(30)
+  additional_phone varchar(15)
+  created_at timestamp
+  updated_at timestamp
+
+  supplier_id integer [not null]
+}
+
+Table supplies_supplycontract [note: "Контракт на поставки"] {
+  id integer [primary key]
+  created_at timestamp
+  updated_at timestamp
+
+  shop_id integer [not null]
+  supplier_id integer [not null]
+}
+
+Table supplies_supplycontractproduct [note: "Связка продукт - контракт на поставки"] {
+  id integer [primary key]
+  created_at timestamp
+  updated_at timestamp
+
+  supply_contract_id integer [not null]
+  product_id integer [not null]
+}
+
+Table supplies_supply [note: "Поставка"] {
+  id integer [primary key]
+  date date
+  created_at timestamp
+  updated_at timestamp
+
+  shop_id integer [not null]
+  supply_contract_id integer [not null]
+}
+
+Table supplies_supplyproduct [note: "Связка продукт - поставка"] {
+  id integer [primary key]
+  quantity integer
+  purchase_price decimal
+  created_at timestamp
+  updated_at timestamp
+
+  supply_id integer [not null]
+  product_id integer [not null]
+}
+
+// offices
+
+Tablegroup offices {
+  offices_mainofficefilial
+  offices_shopopeningrequest
+}
+
+Table offices_mainofficefilial [note: "Филиал головного офиса"]{
+  id integer [primary key]
+  address varchar(128)
+  created_at timestamp
+  updated_at timestamp
+
+  city_id integer [not null]
+  director_id integer [not null]
+}
+
+Table offices_shopopeningrequest [note: "Заявка на открытие магазина"] {
+  id integer [primary key]
+  is_confirmed boolean
+  confirmation_date date
+  created_at timestamp
+  updated_at timestamp
+
+  shop_id integer [not null]
+  main_office_filial_id integer [not null]
+  employee_who_confirmed integer
+}
+
+
+
+Ref: "shops_city"."region_id" < "shops_region"."id"
+
+Ref: "shops_shop"."city_id" < "shops_city"."id"
+
+Ref: "shops_product"."unit_id" < "shops_unit"."id"
+
+Ref: "supplies_supply"."shop_id" < "shops_shop"."id"
+
+Ref: "supplies_supplyproduct"."supply_id" < "supplies_supply"."id"
+
+Ref: "supplies_supplyproduct"."product_id" < "shops_product"."id"
+
+Ref: "shops_stoplist"."shop_id" < "shops_shop"."id"
+
+Ref: "shops_pricelist"."pricelist_type_id" < "shops_pricelisttype"."id"
+
+Ref: "shops_stoplistproduct"."stoplist_transfer_reason_id" < "shops_stoplisttransferreason"."id"
+
+Ref: "shops_stoplistproduct"."stoplist_id" < "shops_stoplist"."id"
+
+Ref: "shops_stoplistproduct"."product_id" < "shops_product"."id"
+
+Ref: "shops_pricelist"."product_id" < "shops_product"."id"
+
+Ref: "shops_pricing_constraint"."pricelist_id" < "shops_pricelist"."id"
+
+Ref: "shops_product"."category_id" < "shops_category"."id"
+
+Ref: "shops_inventory"."shop_id" < "shops_shop"."id"
+
+Ref: "shops_inventoryproduct"."inventory_id" < "shops_inventory"."id"
+
+Ref: "shops_writeoffact"."writeoff_reason_id" < "shops_writeoffreason"."id"
+
+Ref: "shops_writeoffact"."shop_id" < "shops_shop"."id"
+
+Ref: "shops_writeoffact"."product_id" < "shops_product"."id"
+
+Ref: "shops_inventoryproduct"."product_id" < "shops_product"."id"
+
+Ref: "shops_sale"."shop_id" < "shops_shop"."id"
+
+Ref: "shops_saleproduct"."sale_id" < "shops_sale"."id"
+
+Ref: "shops_saleproduct"."product_id" < "shops_product"."id"
+
+Ref: "shops_space"."shop_id" < "shops_shop"."id"
+
+Ref: "shops_space"."space_type_id" < "shops_spacetype"."id"
+
+Ref: "shops_spaceproduct"."product_id" < "shops_product"."id"
+
+Ref: "shops_spaceproduct"."space_id" < "shops_space"."id"
+
+Ref: "shops_productmovement"."space_from_id" < "shops_space"."id"
+
+Ref: "shops_productmovement"."space_to_id" < "shops_space"."id"
+
+Ref: "shops_productmovement"."product_id" < "shops_product"."id"
+
+Ref: "supplies_supplycontract"."supplier_id" < "supplies_supplier"."id"
+
+Ref: "supplies_supplycontract"."shop_id" < "shops_shop"."id"
+
+Ref: "supplies_supply"."supply_contract_id" < "supplies_supplycontract"."id"
+
+Ref: "supplies_supplycontractproduct"."supply_contract_id" < "supplies_supplycontract"."id"
+
+Ref: "supplies_supplycontractproduct"."product_id" < "shops_product"."id"
+
+Ref: "supplies_suppliercontact"."supplier_id" < "supplies_supplier"."id"
+
+Ref: "offices_mainofficefilial"."city_id" < "shops_city"."id"
+
+Ref: "shops_shop"."main_office_filial_id" < "offices_mainofficefilial"."id"
+
+Ref: "offices_shopopeningrequest"."main_office_filial_id" < "offices_mainofficefilial"."id"
+
+Ref: "offices_shopopeningrequest"."shop_id" < "shops_shop"."id"
+
+Ref: "offices_mainofficefilial"."director_id" < "employees_employee"."id"
+
+Ref: "offices_shopopeningrequest"."employee_who_confirmed" < "employees_employee"."id"
+
+Ref: "shops_shop"."director_id" < "employees_employee"."id"
+
+Ref: "employees_employee"."passport_id" < "employees_passport"."id"
+
+Ref: "employees_employee"."job_position_id" < "employees_jobposition"."id"
+
+Ref: "shops_productmovement"."transport_id" < "shops_transport"."id"
+
+Ref: "shops_transport"."driver_id" < "employees_employee"."id"
+
+Ref: "shops_writeoffact"."employee_wrote_off" < "employees_employee"."id"
+
+Ref: "employees_workingrate"."id" < "employees_employee"."working_rate_id"
+
+Ref: "auth_groupemployee"."employee_id" < "employees_employee"."id"
+
+Ref: "auth_groupemployee"."group_id" < "auth_group"."id"
+
+Ref: "auth_permissiongroup"."group_id" < "auth_group"."id"
+
+Ref: "auth_permissiongroup"."permission_id" < "auth_permission"."id"
