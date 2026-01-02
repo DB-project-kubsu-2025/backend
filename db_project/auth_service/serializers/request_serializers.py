@@ -6,7 +6,7 @@ from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
 from rest_framework import serializers
 
 from common_utils import constants
-from employees.models import Employee
+from employees.models import Employee, Passport
 
 
 @extend_schema_serializer(
@@ -100,7 +100,7 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
             'Стандартный запрос',
             value={
                 'username': 'username',
-                'email': 'email',
+                'email': 'email@email.com',
                 'last_name': 'last_name',
                 'first_name': 'first_name',
                 'second_name': 'second_name',
@@ -139,6 +139,7 @@ class RegisterEmployeeRequestSerializer(serializers.Serializer):
     second_name = serializers.CharField(
         help_text='Отчество', allow_blank=True, max_length=60
     )
+    birth_date = serializers.DateField(help_text='Дата рождения')
     gender = serializers.ChoiceField(help_text='Пол', choices=constants.GENDER_CHOICES)
     phone = serializers.CharField(help_text='Номер телефона', allow_blank=True, max_length=13)
     work_phone = serializers.CharField(help_text='Рабочий телефон', allow_blank=True, max_length=13)
@@ -172,6 +173,9 @@ class RegisterEmployeeRequestSerializer(serializers.Serializer):
 
     def validate(self, obj):
         """Проверка"""
+        if Passport.objects.filter(type=obj['type'], series=obj['series'], number=['number']).exists():
+            raise serializers.ValidationError('Паспорт уже добавлен в базу')
+
         if obj['password'] != obj['password2']:
             raise serializers.ValidationError('Пароли не совпадают')
 
