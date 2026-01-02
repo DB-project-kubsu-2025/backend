@@ -1,3 +1,5 @@
+import datetime
+
 import environ
 from pathlib import Path
 
@@ -12,17 +14,18 @@ DEBUG = env.bool('DEBUG', default=True)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default='localhost')
 
 INSTALLED_APPS = [
+    # local app
     'auth_service.apps.AuthServiceConfig',
-
+    # default django apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    # third-party-apps
     'drf_spectacular',
-
+    # local app
     'employees.apps.EmployeesConfig',
     'shops.apps.ShopsConfig',
     'supplies.apps.SuppliesConfig',
@@ -102,10 +105,29 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'fit journal API reference',
+    'SERVE_INCLUDE_SCHEMA': True,
+    'SECURITY': [
+        {
+            'BearerAuth': [],
+        },
+    ],
+    'SECURITY_DEFINITIONS': {
+        'BearerAuth': {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerformat': 'JWT',
+        },
+    },
+}
+
 SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_COOKIE_HTTP_ONLY': True,
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(hours=6),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(weeks=4),
 }
 
 LANGUAGE_CODE = env('LANGUAGE_CODE', default='ru')
