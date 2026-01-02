@@ -25,7 +25,7 @@
     ```
 8. Также в терминале запустите еще одну команду:
     ```bash
-    docker exec db_project-app-1 poetry run python3 manage.py createsuperuser
+    docker exec db_project-app-1 poetry run python3 manage.py create_custom_superuser
     ```
 
 ## Настройка интерпретатора в PyCharm Professional
