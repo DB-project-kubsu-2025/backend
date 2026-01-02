@@ -1,0 +1,103 @@
+from drf_spectacular.utils import extend_schema_view, extend_schema
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from auth_service.permissions import HasRefreshToken
+from auth_service.serializers import (
+    ChangePasswordRequestSerializer,
+    EmployeeRequestSerializer,
+)
+from common_utils.constants import APISchemaTags, DefaultAPIResponses
+
+
+@extend_schema_view(
+    post=extend_schema(
+        tags=[APISchemaTags.AUTH_SERVICE],
+        summary='Сменить пароль',
+        operation_id='Сменить пароль',
+        request=ChangePasswordRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: {},
+        },
+    ),
+)
+class ChangePassword(APIView):
+    """Сменить пароль"""
+
+    permission_classes: list = [IsAuthenticated]
+    authentication_classes: list = [JWTAuthentication]
+
+    def post(self, reqeust: Request, *args, **kwargs) -> Response:
+        """POST-запрос"""
+        request_serializer = ChangePasswordRequestSerializer(
+            data=reqeust.data,
+            context={
+                'user': reqeust.user,
+            },
+        )
+        request_serializer.is_valid(raise_exception=True)
+        reqeust.user.set_password(request_serializer.validated_data['new_password'])
+        return Response(status=status.HTTP_200_OK)
+
+
+@extend_schema_view(
+    post=extend_schema(
+        tags=[APISchemaTags.AUTH_SERVICE],
+        summary='Выйти из профиля',
+        operation_id='Выйти из профиля',
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_205_RESET_CONTENT: {},
+        },
+    ),
+)
+class LogOut(APIView):
+    """Выйти из профиля"""
+
+    permission_classes: list = [IsAuthenticated, HasRefreshToken]
+    authentication_classes: list = [JWTAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        """POST-запрос"""
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+
+        response = Response(status=status.HTTP_205_RESET_CONTENT)
+        response.delete_cookie('refresh_token')
+        return response
+
+
+@extend_schema_view(
+    patch=extend_schema(
+        tags=[APISchemaTags.AUTH_SERVICE],
+        summary='Поменять данные профиля работника',
+        operation_id='Поменять данные профиля работника',
+        request=EmployeeRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: {},
+        },
+    ),
+)
+class EmployeeChange(APIView):
+    """Поменять данные профиля работника"""
+
+    def patch(self, request, *args, **kwargs):
+        """PATCH-запрос"""
+        request_serializer = EmployeeRequestSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+        )
+        request_serializer.is_valid(raise_exception=True)
+        request_serializer.save()
+
+        return Response(status=status.HTTP_200_OK)

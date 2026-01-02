@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularRedocView, SpectacularAPIView
 
@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path('api/auth_service/', include('auth_service.urls'))
 ]
 
 if settings.DEBUG:
