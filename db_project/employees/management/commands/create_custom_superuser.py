@@ -2,7 +2,7 @@ import datetime
 
 from django.core.management import BaseCommand
 
-from auth_service.models import Passport, Employee
+from employees.models import Passport, Employee
 from common_utils import constants
 
 

@@ -23,7 +23,9 @@ INSTALLED_APPS = [
 
     'drf_spectacular',
 
-    'ml.apps.MlConfig',
+    'employees.apps.EmployeesConfig',
+    'shops.apps.ShopsConfig',
+    'supplies.apps.SuppliesConfig',
 ]
 
 MIDDLEWARE = [
@@ -36,7 +38,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-AUTH_USER_MODEL = 'auth_service.Employee'
+AUTH_USER_MODEL = 'employees.Employee'
 
 ROOT_URLCONF = 'db_project.urls'
 
@@ -117,6 +119,5 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
-
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
