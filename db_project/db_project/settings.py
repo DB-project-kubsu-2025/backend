@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # third-party-apps
     'drf_spectacular',
+    'corsheaders',
     # local app
     'employees.apps.EmployeesConfig',
     'shops.apps.ShopsConfig',
@@ -44,6 +45,10 @@ MIDDLEWARE = [
 AUTH_USER_MODEL = 'employees.Employee'
 
 ROOT_URLCONF = 'db_project.urls'
+
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = ['https://crm.com', 'https://admin.crm.com']
 
 TEMPLATES = [
     {
