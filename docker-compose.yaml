@@ -11,6 +11,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - nginx
     networks:
       - db_project_network
 
@@ -29,6 +30,19 @@ services:
     image: redis:7
     container_name: db_project_redis_cache
     restart: always
+    networks:
+      - db_project_network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./site.conf:/etc/nginx/conf.d/site.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    extra_hosts:
+      - "crm.com:host-gateway"
     networks:
       - db_project_network
 
