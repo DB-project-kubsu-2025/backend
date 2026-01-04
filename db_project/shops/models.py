@@ -1,5 +1,3 @@
-from enum import unique
-
 from django.db import models
 
 from common_utils.mixins import AutoDateMixin
