@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    working_dir: /home/django/db_project/db_project
     command: poetry run python3 manage.py runserver 0.0.0.0:8070
     volumes:
       - ./:/home/django/db_project
@@ -11,7 +12,6 @@ services:
     depends_on:
       - postgres
       - redis
-      - nginx
     networks:
       - db_project_network
 
@@ -23,6 +23,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-1234}
       - POSTGRES_DB=${POSTGRES_DB:-db_project_postgres}
+      - ALLOWED_HOSTS=localhost,127.0.0.1,app
     networks:
       - db_project_network
 
@@ -45,6 +46,30 @@ services:
       - "crm.com:host-gateway"
     networks:
       - db_project_network
+    depends_on:
+      - app
+      - frontend
+  
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.dev
+    command: npm run dev -- --hostname 0.0.0.0 --port 3000
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=300
+      - NEXT_PUBLIC_API_URL=http://localhost:8070/api
+    ports:
+      - "3001:3000"
+    depends_on:
+      - app
+    networks:
+      - db_project_network
 
 volumes:
   postgres_data:
@@ -54,4 +79,5 @@ volumes:
 
 networks:
   db_project_network:
-    external: true
+    name: db_project_network
+    driver: bridge
