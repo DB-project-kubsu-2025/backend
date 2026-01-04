@@ -14,8 +14,8 @@ from employees.models import (
     TimeEntry,
     TimeSessionCloseReason,
     TimeSession,
-    AdjustmentReason,
-    TimeDay, GlobalTimePolicy,
+    TimeDay,
+    GlobalTimePolicy,
 )
 
 @admin.register(Passport)
@@ -30,14 +30,14 @@ class PassportAdmin(admin.ModelAdmin):
 class WorkingRateAdmin(admin.ModelAdmin):
     """Админ для модели WorkingRate"""
 
-    list_display = ['name', 'monthly_output']
+    list_display = ['id', 'name', 'monthly_output']
 
 
 @admin.register(JobPosition)
 class JobPositionAdmin(admin.ModelAdmin):
     """Админ для модели JobPosition"""
 
-    list_display = ['name']
+    list_display = ['id', 'name']
 
 
 @admin.register(Salary)
@@ -101,7 +101,7 @@ class GlobalTimePolicyAdmin(admin.ModelAdmin):
 class TimeWorkTypeAdmin(admin.ModelAdmin):
     """Админ для модели TimeWorkType"""
 
-    list_display = ['name', 'is_active']
+    list_display = ['id', 'name', 'is_active']
 
 
 @admin.register(TimeEntry)
@@ -117,7 +117,7 @@ class TimeEntryAdmin(admin.ModelAdmin):
 class TimeSessionCloseReasonAdmin(admin.ModelAdmin):
     """Админ для модели TimeSessionCloseReason"""
 
-    list_display = ['name']
+    list_display = ['id', 'name']
 
 
 @admin.register(TimeSession)
@@ -126,13 +126,6 @@ class TimeSessionAdmin(admin.ModelAdmin):
 
     list_display = ['employee', 'close_reason', 'closed', 'login_at', 'logout_at']
     raw_id_fields = ['employee', 'close_reason']
-
-
-@admin.register(AdjustmentReason)
-class AdjustmentReasonAdmin(admin.ModelAdmin):
-    """Админ для модели AdjustmentReason"""
-
-    list_display = ['name']
 
 
 @admin.register(TimeDay)

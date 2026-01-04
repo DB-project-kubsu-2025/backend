@@ -349,20 +349,6 @@ class TimeSession(AutoDateMixin):
         return f'Рабочая сессия работника {self.employee_id}: {self.login_at}'
 
 
-class AdjustmentReason(AutoDateMixin):
-    """Причина корректировки"""
-
-    name = models.CharField(verbose_name='Название', max_length=80)
-
-    class Meta:
-        verbose_name = 'Причина корректировки'
-        verbose_name_plural = 'Причины корректировки'
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-
 class TimeDay(AutoDateMixin):
     """Сводка по дню сотрудника"""
 
@@ -376,7 +362,7 @@ class TimeDay(AutoDateMixin):
     comment = models.CharField(verbose_name='Комментарий', max_length=300, blank=True, default='')
     adjusted_minutes = models.PositiveSmallIntegerField(verbose_name='Скорректированные минуты', default=0, blank=True)
     adjustment_reason = models.ForeignKey(
-        'AdjustmentReason',
+        'TimeSessionCloseReason',
         verbose_name='Причина корректировки',
         on_delete=models.PROTECT,
         null=True,
