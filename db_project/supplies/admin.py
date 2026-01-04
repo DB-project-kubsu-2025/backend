@@ -1,4 +1,3 @@
-from celery.bin.control import status
 from django.contrib import admin
 
 from supplies.models import (
