@@ -1,17 +1,16 @@
-from celery.bin.control import status
 from django.contrib import admin
 
 from supplies.models import (
-Supplier,
-SupplierContact,
-SupplyContract,
-SupplyContractProduct,
-Supply,
-SupplyProduct,
-SupplyProductLot,
-DiscrepancyReason,
-SupplyDiscrepancy,
-DiscrepancyAttachment,
+    Supplier,
+    SupplierContact,
+    SupplyContract,
+    SupplyContractProduct,
+    Supply,
+    SupplyProduct,
+    SupplyProductLot,
+    DiscrepancyReason,
+    SupplyDiscrepancy,
+    DiscrepancyAttachment,
 )
 
 @admin.register(Supplier)
