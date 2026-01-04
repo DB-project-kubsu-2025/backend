@@ -371,6 +371,7 @@ class SupplyDiscrepancy(AutoDateMixin):
             f' {self.created_by.work_phone})',
         )
 
+
 class DiscrepancyAttachment(AutoDateMixin):
     """Вложение для несоответствий"""
 
