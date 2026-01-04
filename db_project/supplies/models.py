@@ -366,10 +366,7 @@ class SupplyDiscrepancy(AutoDateMixin):
         ordering = ['status']
 
     def __str__(self):
-        return (
-            f'Несоответствие №{self.id} (создал {self.created_by.last_name} {self.created_by.first_name}'
-            f' {self.created_by.work_phone})',
-        )
+        return f'Несоответствие №{self.id} (создал {self.created_by}'
 
 
 class DiscrepancyAttachment(AutoDateMixin):
