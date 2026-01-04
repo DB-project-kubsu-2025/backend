@@ -59,3 +59,8 @@ class MainOfficeFilial(AutoDateMixin):
 
     def __str__(self):
         return f'Филиал ГК по адресу: {self.city.name} {self.address}'
+
+
+# class StorageOpeningRequest(AutoDateMixin):
+#     """Запрос на открытие ТТ/хранилища"""
+#     # todo:
