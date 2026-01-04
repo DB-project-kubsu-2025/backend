@@ -104,6 +104,32 @@ class ProductMedia(AutoDateMixin):
         return f'Медиа для {self.product.name} id={self.id}'
 
 
+class ProductInventoryLot(AutoDateMixin):
+    """Партия товара"""
+
+    product = models.ForeignKey(
+        'Product',
+        verbose_name='Продукт',
+        on_delete=models.PROTECT,
+        related_name='inventory_lots',
+    )
+    supply_product = models.ForeignKey(
+        'supplies.SupplyProduct',
+        verbose_name='Продукт в поставке',
+        on_delete=models.PROTECT,
+    )
+    manufacture_date = models.DateField(verbose_name='Дата изготовления')
+    expiry_date = models.DateField(verbose_name='Дата истечения срока годности')
+    barcode = models.UUIDField(verbose_name='Штрих-код')
+
+    class Meta:
+        verbose_name = 'Партия товара'
+        verbose_name_plural = 'Партии товаров'
+
+    def __str__(self):
+        return f'Партия №{self.id}, {self.product}'
+
+
 class StorageType(AutoDateMixin):
     """Тип хранилища"""
 

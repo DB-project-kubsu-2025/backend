@@ -82,15 +82,44 @@ class Salary(AutoDateMixin):
         return f'{self.id} -> {self.amount}'
 
 
-# class Workplace(AutoDateMixin):
-#     """Рабочее место"""
-#
-#     # todo:
+class Workplace(AutoDateMixin):
+    """Рабочее место"""
+
+    # сотрудник может работать либо в хранилище, либо в филиале ГК
+    storage = models.ForeignKey(
+        'shops.Storage',
+        verbose_name='Хранилище',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    main_office_filial = models.ForeignKey(
+        'offices.MainOfficeFilial',
+        verbose_name='Филиал ГК',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = 'Рабочее место'
+        verbose_name_plural = 'Рабочие места'
+
+    def __str__(self):
+        return f'Рабоче место №{self.id}'
 
 
 class Employee(AbstractUser, AutoDateMixin):
     """Модель: Работник"""
 
+    workplace = models.OneToOneField(
+        'Workplace',
+        verbose_name='Рабочее место',
+        help_text='Пустое, если работник не работает',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
     second_name = models.CharField(verbose_name='Отчество', max_length=50, blank=True, default='')
     birth_date = models.DateField(verbose_name='Дата рождения')
     gender = models.CharField(verbose_name='Пол', choices=constants.GENDER_CHOICES)

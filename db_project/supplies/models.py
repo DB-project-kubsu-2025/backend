@@ -206,7 +206,7 @@ class Supply(AutoDateMixin):
 
 
 class SupplyProduct(AutoDateMixin):
-    """Связка продукт - поставка"""
+    """Продукт в поставке"""
 
     OK = 'ok'
     HAS_ISSUES = 'has_issues'
