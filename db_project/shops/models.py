@@ -1,5 +1,3 @@
-from pickle import GLOBAL
-
 from django.db import models
 from django.utils import timezone
 
@@ -257,6 +255,7 @@ class InventoryLot(AutoDateMixin):
     def __str__(self):
         return f'Партия №{self.id} продукта {self.product}'
 
+
 class InventoryBalance(AutoDateMixin):
     """Связка партия - место хранения"""
 
@@ -347,20 +346,20 @@ class InventoryMovement(AutoDateMixin):
         null=True,
         blank=True,
     )
-    # sales_receipt = models.ForeignKey( # todo:
-    #     'SalesReceipt',
-    #     verbose_name='',
-    #     on_delete=models.PROTECT,
-    #     null=True,
-    #     blank=True,
-    # )
-    # writeoff_act = models.ForeignKey(
-    #     'WrileoffAct',
-    #     verbose_name='Акт списания',
-    #     on_delete=models.PROTECT,
-    #     null=True,
-    #     blank=True,
-    # )
+    sales_receipt = models.ForeignKey(
+        'SaleReceipt',
+        verbose_name='',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    writeoff_act = models.ForeignKey(
+        'WriteOffAct',
+        verbose_name='Акт списания',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
     quantity = models.PositiveSmallIntegerField(verbose_name='Кол-во')
 
     class Meta:

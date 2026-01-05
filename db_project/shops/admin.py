@@ -8,6 +8,36 @@ from shops.models import (
     ProductMedia,
     StorageType,
     Storage,
+    SpaceType,
+    Space,
+    InventoryLot,
+    InventoryBalance,
+    MovementType,
+    InventoryMovement,
+    PriceList,
+    PriceListType,
+    PriceListBase,
+    PriceListProduct,
+    PricingConstraint,
+    PricingRun,
+    StorePrice,
+    CouponDiscountType,
+    Coupon,
+    PaymentMethod,
+    SaleReceipt,
+    SalesReceiptLine,
+    StopList,
+    StopListReason,
+    StopListProduct,
+    StockTakeType,
+    StockTakeLine,
+    StockTakeAdjustment,
+    WriteoffReason,
+    WriteOffAct,
+    WriteoffLine,
+    WriteoffAttachment,
+    WriteoffPosting,
+    StockTake,
 )
 
 @admin.register(ProductUnit)
@@ -73,3 +103,153 @@ class StorageAdmin(admin.ModelAdmin):
     ]
     raw_id_fields = ['director', 'main_office_filial']
     list_filter = ['main_office_filial', 'opened']
+
+
+@admin.register(SpaceType)
+class SpaceTypeAdmin(admin.ModelAdmin):
+    """Админ для SpaceType"""
+
+
+@admin.register(Space)
+class SpaceAdmin(admin.ModelAdmin):
+    """Админ для Space"""
+
+
+@admin.register(InventoryLot)
+class InventoryLotAdmin(admin.ModelAdmin):
+    """Админ для InventoryLot"""
+
+
+@admin.register(InventoryBalance)
+class InventoryBalanceAdmin(admin.ModelAdmin):
+    """Админ для InventoryBalance"""
+
+
+@admin.register(MovementType)
+class MovementTypeAdmin(admin.ModelAdmin):
+    """Админ для MovementType"""
+
+
+@admin.register(InventoryMovement)
+class InventoryMovementAdmin(admin.ModelAdmin):
+    """Админ для InventoryMovement"""
+
+
+@admin.register(PriceList)
+class PriceListAdmin(admin.ModelAdmin):
+    """Админ для PriceList"""
+
+
+@admin.register(PriceListType)
+class PriceListTypeAdmin(admin.ModelAdmin):
+    """Админ для PriceListType"""
+
+
+@admin.register(PriceListBase)
+class PriceListBaseAdmin(admin.ModelAdmin):
+    """Админ для PriceListBase"""
+
+
+@admin.register(PriceListProduct)
+class PriceListProductAdmin(admin.ModelAdmin):
+    """Админ для PriceListProduct"""
+
+
+@admin.register(PricingConstraint)
+class PricingConstraintAdmin(admin.ModelAdmin):
+    """Админ для PricingConstraint"""
+
+
+@admin.register(PricingRun)
+class PricingRunAdmin(admin.ModelAdmin):
+    """Админ для PricingRun"""
+
+
+@admin.register(StorePrice)
+class StorePriceAdmin(admin.ModelAdmin):
+    """Админ для StorePrice"""
+
+
+@admin.register(CouponDiscountType)
+class CouponDiscountTypeAdmin(admin.ModelAdmin):
+    """Админ для CouponDiscountType"""
+
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    """Админ для Coupon"""
+
+
+@admin.register(PaymentMethod)
+class PaymentMethodAdmin(admin.ModelAdmin):
+    """Админ для PaymentMethod"""
+
+
+@admin.register(SaleReceipt)
+class SaleReceiptAdmin(admin.ModelAdmin):
+    """Админ для SaleReceipt"""
+
+
+@admin.register(SalesReceiptLine)
+class SalesReceiptLineAdmin(admin.ModelAdmin):
+    """Админ для SalesReceiptLine"""
+
+
+@admin.register(StopList)
+class StopListAdmin(admin.ModelAdmin):
+    """Админ для StopList"""
+
+
+@admin.register(StopListReason)
+class StopListReasonAdmin(admin.ModelAdmin):
+    """Админ для StopListReason"""
+
+
+@admin.register(StopListProduct)
+class StopListProductAdmin(admin.ModelAdmin):
+    """Админ для StopListProduct"""
+
+
+@admin.register(StockTakeType)
+class StockTakeTypeAdmin(admin.ModelAdmin):
+    """Админ для StockTakeType"""
+
+
+@admin.register(StockTake)
+class StockTakeAdmin(admin.ModelAdmin):
+    """Админ для StockTake"""
+
+
+@admin.register(StockTakeLine)
+class StockTakeLineAdmin(admin.ModelAdmin):
+    """Админ для StockTakeLine"""
+
+
+@admin.register(StockTakeAdjustment)
+class StockTakeAdjustmentAdmin(admin.ModelAdmin):
+    """Админ для StockTakeAdjustment"""
+
+
+@admin.register(WriteoffReason)
+class WriteoffReasonAdmin(admin.ModelAdmin):
+    """Админ для WriteoffReason"""
+
+
+@admin.register(WriteOffAct)
+class WriteOffActAdmin(admin.ModelAdmin):
+    """Админ для WriteOffAct"""
+
+
+@admin.register(WriteoffLine)
+class WriteoffLineAdmin(admin.ModelAdmin):
+    """Админ для WriteoffLine"""
+
+
+@admin.register(WriteoffAttachment)
+class WriteoffAttachmentAdmin(admin.ModelAdmin):
+    """Админ для WriteoffAttachment"""
+
+
+@admin.register(WriteoffPosting)
+class WriteoffPostingAdmin(admin.ModelAdmin):
+    """Админ для WriteoffPosting"""
