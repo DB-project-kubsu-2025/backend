@@ -4,333 +4,855 @@ TableGroup employees {
   auth_permission
   auth_group
   auth_groupemployee
+  employees_passport
   employees_workingrate
   employees_jobposition
-  employees_passport
+  employees_salary
   employees_employee
-}
-
-Table auth_permission [note: "Права"] {
-  id integer [primary key]
-  name varchar(150)
-}
-
-Table auth_permissiongroup [note: "Связь группа - права"] {
-  id integer [primary key]
-
-  group_id integer [not null]
-  permission_id integer [not null]
-}
-
-Table auth_group [note: "Группа"] {
-  id integer [primary key]
-  name varchar(150) unique
-}
-
-Table auth_groupemployee [note: "Связь работник - группа"] {
-  id integer [primary key]
-
-  group_id integer [not null]
-  employee_id integer [not null]
-}
-
-Table employees_workingrate [note: "Справочник рабочих ставок"] {
-  id integer [primary key]
-  name varchar(100)
-  monthly_output integer
-  created_at timestamp
-  updated_at timestamp
-}
-
-Table employees_jobposition [note: "Справочние должностей"] {
-  id integer [primary key]
-  name varchar(100)
-  created_at timestamp
-  updated_at timestamp
+  employees_workplace
+  employees_leaverequest
+  employees_leavetype
+  employees_leaverequestattachment
+  employees_annualleavebalance
+  employees_timeentry
+  employees_timepolicyglobal
+  employees_timesessionclosereason
+  employees_timesession
+  employees_timeday
 }
 
 Table employees_passport [note: "Паспорт"] {
-  id integer [primary key]
-  type varchar(10)
-  series varchar(4)
-  number varchar(7)
-  issue_date date
-  issued_by varchar(255)
-  authority_code varchar(7)
+  id bigserial [primary key]
+
+  series varchar(4) [not null]
+  number varchar(9) [not null]
+  type_enum passport_type_enum [not null]
+  birth_date date [not null]
+  issue_date date [not null]
+  issued_by varchar(255) [not null]
+  expired_date date [not null]
+  authority_code varchar(7) [not null]
   registration_address varchar(256)
   residentioal_address varchar(256)
-  created_at timestamp
-  updated_at timestamp
+  country_code char(3)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (series, number, type_enum) [unique]
+  }
+}
+
+Enum passport_type_enum {
+  inner [note: "внутренний"]
+  outer [note: "заграничный"]
+}
+
+Table auth_permission [note: "Права"] {
+  id serial [primary key]
+
+  name varchar(150)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table auth_permissiongroup [note: "Связь группа - права"] {
+  id serial [primary key]
+  group_id int [not null]
+  permission_id int [not null]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table auth_group [note: "Группа"] {
+  id serial [primary key]
+
+  name varchar(150) [unique]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table auth_groupemployee [note: "Связь работник - группа"] {
+  id serial [primary key]
+  group_id int [not null]
+  employee_id bigint [not null]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_workingrate [note: "Справочник рабочих ставок"] {
+  id serial [primary key]
+
+  name varchar(100) [not null, note: "FULL_TIME/PART_TIME_0_75/PART_TIME_0_5/PART_TIME_0_25"]
+  monthly_hours smallint [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_jobposition [note: "Справочник должностей"] {
+  id serial [primary key]
+
+  name varchar(100) [not null, note: "WAREHOUSE_CLERK/MERCHANDISER/SALES_ASSOCIATE/STORE_DIRECTOR/HEAD_OFFICE_EMPLOYEE/HEAD_OFFICE_DIRECTOR"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_salary [note: "Зарплатная матрица: должность × ставка"] {
+  id serial [primary key]
+  jobposition_id int [not null]
+  workingrate_id int [not null]
+
+  amount numeric(10, 2) [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (jobposition_id, workingrate_id) [unique]
+  }
 }
 
 Table employees_employee [note: "Сотрудник"] {
-  id integer [primary key]
-  surname varchar(40)
-  first_name varchar(40)
-  second_name varchar(40)
-  gender varchar(1)
-  snils varchar(11)
-  inn varchar(12)
-  phone varchar(15)
-  work_phone varchar(15)
-  email varchar(30)
-  work_email varchar(30)
-  created_at timestamp
-  updated_at timestamp
+  id bigserial [primary key]
+  passport_id bigint [not null, unique]
+  job_position_id int [not null]
+  working_rate_id int [not null]
+  workplace_id int [not null]
 
-  passport_id integer [not null]
-  job_position_id integer [not null]
-  working_rate_id integer [not null]
+  surname varchar(40) [not null]
+  first_name varchar(40) [not null]
+  second_name varchar(40) [not null]
+  gender varchar(1) [not null]
+  snils varchar(14) [not null, unique]
+  inn varchar(12) [not null, unique]
+  phone varchar(15) [not null]
+  work_phone varchar(15) [not null]
+  email varchar(100) [not null]
+  work_email varchar(100) [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_workplace [note: "Место работы сотрудника"] {
+  id serial [primary key]
+  storage_id int
+  office_filial_id int
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_leavetype [note: "Вид временного отсутствия"] {
+  id serial [primary key]
+
+  name varchar(60) [not null]
+  counts_against_annual boolean [not null, default: false, note: "Уменьшает ли количество дней отпуска"]
+  requires_documents boolean [not null, default: false, note: "Нужно ли прикреплять документы"]
+  documents_due_days smallint [note: "Требуемое количество дней на загрузку документов (при requires_documents = true)"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_leaverequest [note: "Запрос на временное отсутствие"] {
+  id bigserial [primary key]
+  employee_id bigint [not null]
+  approved_by bigint
+  leave_type_id int [not null]
+
+  leave_status leave_status_enum [not null]
+  start_date date [not null]
+  end_date date [not null]
+  approved_at timestamp
+  comment text
+  documents_due_at timestamp [note: "Крайний срок, до которого сотрудник обязан загрузить подтверждающие документы"]
+  documents_received_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Enum leave_status_enum {
+  on_approval [note: "На согласовании"]
+  rejected [note: "Отклонено"]
+  planned [note: "Запланировано"]
+  completed [note: "Завершено"]
+}
+
+Table employees_leaverequestattachment [note: "Документы, приложенные к заявке"] {
+  id bigserial [primary key]
+  leave_request_id bigint [not null]
+
+  file_path text [not null]
+  uploaded_at timestamp [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_annualleavebalance [note: "Отпускной баланс по годам"] {
+  id bigserial [pk]
+  employee_id bigint [not null]
+
+  year smallint [not null]
+  base_days smallint [not null, default: 28, note: "Основное количество дней отпуска в году"]
+  carry_in_days smallint [not null, default: 0, note: "Перенос с прошлых лет"]
+  manual_adjust_days smallint [not null, default: 0, note: "Ручные корректировки"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (employee_id, year) [unique]
+  }
+}
+
+Table employees_timeentry [note: "Списание времени (активность)"] {
+  id bigserial [primary key]
+  employee_id bigint [not null]
+
+  work_date date [not null]
+  minutes int [not null]
+  comment text [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_timepolicyglobal [note: "Единая политика рабочего времени для всех"] {
+  id serial [primary key]
+
+  required_minutes smallint [not null, note: "Сколько должно быть списано в день"]
+  cutoff_minute smallint [not null, note: "Момент времени дня для автозакрытия смены (количество минут от начала суток)"]
+  prompt_wait_minutes smallint [not null, default: 5, note: "Сколько ждать ответа пользователя"]
+  effective_from date [not null, note: "С какого дня действует данная политика"]
+  effective_to date [note: "По какой день действует политика, NULL - до текущего момента"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_timesessionclosereason [note: "Причина закрытия рабочей сессии"] {
+  id serial [primary key]
+
+  name varchar(80) [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_timesession [note: "Сессия работы"] {
+  id bigserial [primary key]
+  employee_id bigint [not null]
+  close_reason_id int
+
+  login_at timestamp [not null]
+  logout_at timestamp
+  closed boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table employees_timeday [note: "Сводка по дню сотрудника (комментарий и опциональная корректировка)"] {
+  id bigserial [primary key]
+  employee_id bigint [not null]
+  adjustment_reason int [note: "Обязательно, если adjusted_minutes задан"]
+
+  adjusted_minutes int [note: "NULL - нету ручной корректировки"]
+  work_date date [not null]
+  day_comment text [note: "Комментарий к дню (опционально)"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (employee_id, work_date) [unique]
+  }
 }
 
 // shops
 
 TableGroup shops {
-  shops_unit
-  shops_category
+  shops_productunit
+  shops_productcategory
   shops_product
-  shops_region
-  shops_city
-  shops_shop
+  shops_storageprofiles
+  shops_productmedia
+  shops_inventorylot
+  shops_storagetype
+  shops_storage
   shops_spacetype
   shops_space
-  shops_spaceproduct
-  shops_productmovement
-  shops_pricelisttype
+  shops_inventorybalance
+  shops_movementtype
+  shops_inventorymovement
   shops_pricelist
-  shops_pricing_constraint
+  shops_pricelisttype
+  shops_pricelistbasis
+  shopspricelistproduct
+  shops_pricingconstraint
+  shops_pricingrun
+  shops_storeprice
+  shops_coupondiscounttype
+  shops_coupon
+  shops_paymentmethod
+  shops_salesreceipt
+  shops_salesreceiptline
   shops_stoplist
-  shops_stoplisttransferreason
+  shops_stoplistreason
   shops_stoplistproduct
-  shops_inventory
+  shops_stocktaketype
+  shops_stocktake
+  shops_stocktakeline
+  shops_stocktakeadjustment
   shops_writeoffreason
   shops_writeoffact
-  shops_sale
+  shops_writeoffline
+  shops_writeoffattachment
+  shops_writeoffposting
 }
 
-Table shops_unit [note: "Справочник единиц измерения"] {
-  id integer [primary key]
-  name varchar(32)
-  created_at timestamp
-  updated_at timestamp
+Table shops_productunit [note: "Справочник единиц измерения"] {
+  id serial [primary key]
+
+  name varchar(32) [not null, unique, note: "PIECE/PACK/BOX"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_category [note: "Категория продуктов"] {
-  id integer [primary key]
-  name varchar(128)
-  created_at timestamp
-  updated_at timestamp
+Table shops_productcategory [note: "Категория продуктов"] {
+  id serial [primary key]
+
+  name varchar(64) [not null, unique]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
 Table shops_product [note: "Справочник продуктов"] {
-  id integer [primary key]
-  name varchar(128)
-  description varchar(1024)
-  barcode bytes
-  producer_name varchar(128)
-  producer_code uuid
-  country_name varchar(128)
-  expiration_days_count integer
-  additional_info varchar(1024)
-  created_at timestamp
-  updated_at timestamp
+  id bigserial [primary key]
+  product_unit_id int [not null]
+  product_category_id int [not null]
 
-  unit_id integer [not null]
-  category_id integer [not null]
+  name varchar(128) [not null]
+  description text [not null]
+  expiration_days int [not null]
+  barcode varchar(30) [not null, unique]
+  producer_name varchar(128) [not null]
+  producer_code uuid [not null]
+  country_name varchar(128) [not null]
+  additional_info varchar(300)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_region [note: "Справочник регионов"] {
-  id integer [primary key]
-  name varchar(64)
-  created_at timestamp
-  updated_at timestamp
+Table shops_storageprofiles [note: "Требуемые условия хранения товара"] {
+  id bigserial [primary key]
+  product_id bigint [not null]
+
+  weight numeric(8, 2) [not null]
+  temp_min_c numeric(5, 2)
+  temp_max_c numeric(5, 2)
+  light_sensitive boolean
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_city [note: "Справочник городов"] {
-  id integer [primary key]
-  name varchar(64)
-  created_at timestamp
-  updated_at timestamp
-
-  region_id integer [not null]
+Table shops_productmedia [note: "Медиа для карточки товара"] {
+  id bigserial [primary key]
+  product_id bigint [not null]
+  media_path text [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_shop [note: "Магазин"] {
-  id integer [primary key]
-  address varchar(128)
-  approvbed_by_main_company boolean
-  opened boolean
-  created_at timestamp
-  updated_at timestamp
+Table shops_inventorylot [note: "Партия товара"] {
+  id bigserial [primary key]
+  product_id bigint [not null]
+  supply_product_lot bigint [not null, unique]
 
-  city_id integer [not null]
-  main_office_filial_id integer [not null]
-  director_id integer [not null]
+  manufacture_date date [not null]
+  expiry_date date [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_spacetype [note: "Справочник типов помещений"] {
-  id integer [primary key]
-  name varchar(64)
-  slug varchar(64)
-  created_at timestamp
-  updated_at timestamp
+Table shops_storagetype [note: "Тип хранилища"] {
+  id serial [primary key]
+
+  name varchar(50) [not null, unique, note: "STORE/WAREHOUSE/DISTRIBUTION_CENTER"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_space [note: "Помещение в магазине"] {
-  id integer [primary key]
-  created_at timestamp
-  updated_at timestamp
+Table shops_storage [note: "Справочник хранилищ"] {
+  id serial [primary key]
+  main_office_filial_id int [not null]
+  storage_type int [not null]
+  director bigint [not null]
 
-  shop_id integer [not null]
-  space_type_id integer [not null]
+  cadastral_number varchar(20) [not null, unique]
+  address varchar(128) [not null]
+  approved_by_main_company boolean [not null]
+  opened boolean [not null]
+  area numeric(7, 2) [not null]
+  utilization_percent smallint [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_spaceproduct [note: "Связка продукт - помещение"] {
-  id integer [primary key]
-  quantity integer
-  created_at timestamp
-  updated_at timestamp
+Table shops_spacetype [note: "Справочник типов мест хранения"] {
+  id serial [primary key]
 
-  space_id integer [not null]
-  product_id integer [not null]
+  name varchar(64) [not null, unique, note: "SALES_AREA/BACKROOM/SHELF/CHILL/FREEZE"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_transport [note: "Транспорт компании"] {
-  id integer [primary key]
-  name varchar(100)
-  lifting_capacity integer
-  is_available boolean
-  created_at timestamp
-  updated_at timestamp
+Table shops_space [note: "Место хранения в хранилище"] {
+  id bigserial [primary key]
+  storage_id int [not null]
+  space_type_id int [not null]
+  parent_space_id bigint [note: "Для иерархии, например, при SALES_AREA"]
 
-  driver_id integer
+  temp_min_c numeric(5, 2)
+  temp_max_c numeric(5, 2)
+  max_load numeric(6, 2)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_productmovement [note: "Перемещение товара по ТТ"] {
-  id integer [primary key]
-  quantity integer
-  created_at timestamp
-  updated_at timestamp
+Table shops_inventorybalance [note: "Связка партия - место хранения"] {
+  id bigserial [primary key]
+  inventory_lot_id bigint [not null]
+  storage_id int [not null]
+  space_id bigint [not null]
 
-  product_id integer [not null]
-  space_from_id integer [not null]
-  space_to_id integer [not null]
-  transport_id integer
+  quantity int
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (inventory_lot_id, space_id) [unique]
   }
+}
+
+Table shops_movementtype [note: "Типы перемещения партии"] {
+  id serial [primary key]
+
+  name varchar(64) [not null, unique, note: "RECEIPT/MOVE/SALE/WRITE_OFF/ADJUSTMENT"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table shops_inventorymovement [note: "Перемещение партии по хранилищу"] {
+  id bigserial [primary key]
+  inventory_lot_id bigint [not null]
+  storage_id int [not null]
+  space_from_id bigint [note: "NULL - поставка"]
+  space_to_id bigint [note: "NULL - продажа, кража"]
+  created_by bigint [not null]
+  movement_type int [not null]
+  supply_id bigint [note: "Если поставка, то не NULL"]
+  sales_receipt_id bigint [note: "Если продажа, то не NULL"]
+  writeoff_act_id bigint [note: "Если списание, то не NULL"]
+  stocktake_id bigint [note: "Если инвентаризация, то не NULL"]
+
+  quantity int [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table shops_pricelist [note: "Прайс-листы в хранилище"] {
+  id bigserial [primary key]
+  mx_storage_id int [not null]
+
+  received_at timestamp [not null]
+  business_date date [not null, note: "День, в котором действуют прайс-листы"]
+  status price_list_status_enum [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (mx_storage_id, business_date) [unique]
+  }
+}
+
+Enum price_list_status_enum {
+  RECEIVED  [note: "Получен"]
+  VALIDATED [note: "Проверен"]
+  APPLIED   [note: "Применён"]
+  REJECTED  [note: "Отклонён"]
+}
 
 Table shops_pricelisttype [note: "Справочник типов прайс-листа"] {
-  id integer [primary key]
-  name varchar(64)
-  created_at timestamp
-  updated_at timestamp
+  id serial [primary key]
+
+  name varchar(64) [not null, unique, note: "REGULAR/MARKDOWN/PROMO"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_pricelist [note: "Прайслист для продукта в ТТ"] {
-  id integer [primary key]
-  price decimal
-  created_at timestamp
-  updated_at timestamp
+Table shops_pricelistbasis [note: "Основание формирования прайс-листа"] {
+  id serial [primary key]
 
-  product_id integer [not null]
-  pricelist_type_id integer [not null]
+  name varchar(64) [not null, unique, note: "AUTO_MARKDOWN/SUPPLIER_PROMO/COMPETITOR_MATCH/BUY_X_GET_Y"]
+  is_active boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_pricing_constraint [note: "Ограничения на изменение цены"] {
-  id integer [primary key]
-  is_active boolean
-  max_daily_change_pct integer
-  max_markup_pct integerpri
-  created_at timestamp
-  updated_at timestamp
+Table shopspricelistproduct [note: "Прайс-лист для продукта в хранилище"] {
+  id bigserial [primary key]
+  price_list_id bigint [not null]
+  price_list_type_id int [not null]
+  product_id bigint [not null]
+  price_list_basis_id int
 
-  pricelist_id integer [not null]
+  input_cost_vh numeric(11, 2)  [not null, note: "Входная цена ВХ"]
+  final_price numeric(11, 2)    [not null, note: "Итоговая цена"]
+  regular_price numeric(11, 2)  [not null, note: "Регулярная цена"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  indexes {
+    (price_list_id, product_id, price_list_type_id) [unique]
+  }
 }
 
-Table shops_stoplist [note: "Стоп-лист для магазина"] {
-  id integer [primary key]
-  created_at timestamp
-  updated_at timestamp
+Table shops_pricingconstraint [note: "Ограничения на изменение цены"] {
+  id bigserial [primary key]
+  storage_id int
+  product_category_id int
+  product_id bigint
 
-  shop_id integer [not null]
+  is_active boolean [not null, default: false]
+  scope pricing_constraint_scope_enum [not null]
+  priority int [not null, note: "Уроверь приоритета для пересечений в scope"]
+  max_daily_change_pct numeric(5, 2) [not null, default: 90.00]
+  max_markup_pct numeric(6, 2) [not null, default: 1000.00]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_stoplisttransferreason [note: "Справочник причин переноса в стоп-лист"] {
-  id integer [primary key]
-  name varchar(512)
-  created_at timestamp
-  updated_at timestamp
+Enum pricing_constraint_scope_enum {
+  GLOBAL    [note: "Глобально"]
+  STORAGE   [note: "В рамках хранилища"]
+  CATEGORY  [note: "В рамках категории продукта"]
+  PRODUCT   [note: "В рамках одного продукта"]
 }
 
-Table shops_stoplistproduct [note: "Связка продукт - стоплист"] {
-  id integer [primary key]
-  is_actual boolean
-  transferred_to_main_company boolean
-  created_at timestamp
-  updated_at timestamp
+Table shops_pricingrun [note: "Приказ формирования цен товаров в хранилище"] {
+  id bigserial [primary key]
+  storage_id int [not null]
+  created_by bigint [not null]
 
-  stoplist_id integer [not null]
-  product_id integer [not null]
-  stoplist_transfer_reason_id integer [not null]
+  status pricing_run_status_enum [not null]
+  business_date date [not null]
+  started_at timestamp [not null]
+  finished_at timestamp
+  confirmed_at timestamp
+  error_message text [note: "Для status = FAILED"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (storage_id, business_date) [unique]
+  }
 }
 
-Table shops_inventory [note: "Инвентаризация в ТТ"] {
-  id integer [primary key]
-  is_completed boolean
-  date date
-  created_at timestamp
-  updated_at timestamp
-
-  shop_id integer [not null]
+Enum pricing_run_status_enum {
+  STARTED   [note: "Запущено"]
+  COMPLETED [note: "Завершено"]
+  CONFIRMED [note: "Подтверждено"]
+  FAILED    [note: "Ошибка"]
 }
 
-Table shops_inventoryproduct [note: "Связь продукт - инвентаризация"] {
-  id integer [primary key]
-  quantity_in_stock integer
-  created_at timestamp
-  updated_at timestamp
+Table shops_storeprice [note: "Цены товаров хранилища на день"] {
+  id bigserial [primary key]
+  pricing_run_id bigint [not null]
+  product_id bigint [not null]
+  price_list_type_id int [not null]
+  price_list_basis_id int
 
-  product_id integer [not null]
-  inventory_id integer [not null]
+  final_price numeric(11, 2) [not null]
+  business_date date [not null]
+  is_sale_allowed boolean [not null, default: false]
+  block_reason text [note: "При is_sale_allowed = false"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (pricing_run_id, product_id) [unique]
+  }
 }
 
-Table shops_writeoffreason [note: "Справочник причин списания товара"] {
-  id integer [primary key]
-  name varchar(128)
-  created_at timestamp
-  updated_at timestamp
+Table shops_coupondiscounttype [note: "Тип скидок в купонах"] {
+  id serial [primary key]
+
+  name varchar(64) [not null, unique, note: "PERCENT/AMOUNT/FIXED_PRICE/BUY_X_GET_Y"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_writeoffact [note: "Акт списания"] {
-  id integer [primary key]
-  approved_by_director boolean
-  quantity integer
-  date date
-  created_at timestamp
-  updated_at timestamp
+Table shops_coupon [note: "Купоны, применяемые при продаже"] {
+  id bigserial [primary key]
+  storage_id int [not null]
+  product_id bigint
+  discount_type_id int [not null]
 
-  shop_id integer [not null]
-  product_id integer [not null]
-  writeoff_reason_id integer [not null]
-  employee_wrote_off integer [not null]
+  discount_value numeric(11, 2) [not null]
+  valid_from timestamp [not null]
+  valid_to timestamp [not null]
+  min_quantity int [note: "Минимальное количество в чеке для применимости купона"]
+  is_active boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_sale [note: "Продажа"] {
-  id integer [primary key]
-  created_at timestamp
-  updated_at timestamp
+Table shops_paymentmethod [note: "Справочник способов оплаты"] {
+  id serial [primary key]
 
-  shop_id integer [not null]
+  name varchar(64) [not null, unique, note: "CASH/CARD"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table shops_saleproduct [note: "Связь продукт - продажа"] {
-  id integer [primary key]
-  quantity integer
-  price integer
-  created_at timestamp
-  updated_at timestamp
+Table shops_salesreceipt [note: "Чек продажи"] {
+  id bigserial [primary key]
+  storage_id int [not null]
+  cashier_id bigint [not null]
+  time_session_id bigint [not null]
+  payment_method_id int
 
-  sale_id integer [not null]
-  product_id integer [not null]
+  status sales_receipt_status_enum [not null]
+  opened_at timestamp [not null]
+  closed_at timestamp
+  total_gross numeric(11, 2) [not null]
+  total_discount numeric(11, 2) [not null]
+  total_payable numeric(11, 2) [not null]
+  paid_amount numeric(11, 2)
+  paid_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Enum sales_receipt_status_enum {
+  DRAFT     [note: "Создан"]
+  PAID      [note: "Оплачен"]
+  CANCELLED [note: "Отменён"]
+}
+
+Table shops_salesreceiptline [note: "Связка чеки - товары"] {
+  id bigserial [primary key]
+  sales_receipt_id bigint [not null]
+  inventory_lot_id bigint
+  price_list_type_id int [not null]
+  price_list_basis_id int
+  coupon_id bigint
+
+  quantity int [not null]
+  unit_price numeric(11, 2) [not null]
+  line_discount numeric(11, 2) [not null, note: "Суммарная скидка"]
+  line_total numeric(11, 2) [not null, note: "Итого"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table shops_stoplist [note: "Стоп-лист для хранилища"] {
+  id bigserial [primary key]
+  storage_id int [not null]
+  pricing_run_id bigint [not null]
+  created_by bigint [not null]
+
+  business_date date [not null]
+  status stoplist_status_enum [not null]
+  sent_to_hq_at timestamp
+  hq_comment text
+  closed_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (storage_id, business_date) [unique]
+  }
+}
+
+Enum stoplist_status_enum {
+  DRAFT         [note: "Создано"]
+  GENERATED     [note: "Сформировано"]
+  SENT_TO_HQ    [note: "Отправлено в ГК"]
+  ACKNOWLEDGED  [note: "Подтверждено"]
+  RESOLVED      [note: "Решено"]
+  CLOSED        [note: "Закрыто"]
+}
+
+Table shops_stoplistreason [note: "Справочник причин переноса в стоп-лист"] {
+  id serial [primary key]
+
+  name varchar(512) [not null, unique, note: "DAILY_CHANGE_LIMIT/MARKUP_LIMIT/INVALID_INPUT_COST/INVALID_FINAL_PRICE/DUPLICATE_MX_PRODUCT_KIND/AUTO_MARKDOWN_MARKUP_CLAMP/DIRECTOR_OVERRIDE"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table shops_stoplistproduct [note: "Связка продукт - стоп-лист"] {
+  id bigserial [primary key]
+  stoplist_id bigint [not null]
+  product_id bigint [not null]
+  price_list_type_id int [not null]
+  price_list_basis_id int
+  stoplist_reason_id int [not null]
+
+  status stoplist_product_status_enum [not null]
+  input_cost_vh numeric(11, 2) [not null]
+  yesterday_price numeric(11, 2) [not null]
+  candidate_price numeric(11, 2) [not null, note: "Минимальная найденная итоговая цена до ограничений"]
+  final_price_applied numeric(11, 2) [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Enum stoplist_product_status_enum {
+  OPEN        [note: "Открыто"]
+  SENT_TO_HQ  [note: "Отправлено в ГК"]
+  HQ_REPLIED  [note: "Получен ответ от ГК"]
+  RESOLVED    [note: "Решено"]
+  IGNORED     [note: "Проигнорировано"]
+}
+
+Table shops_stocktaketype [note: "Тип инвентаризации"] {
+  id serial [primary key]
+
+  name varchar(64) [not null, unique, note: "REGULAR/ADHOC/OPENING"]
+  is_active boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table shops_stocktake [note: "Инвентаризация"] {
+  id bigserial [primary key]
+  storage_id int [not null]
+  space_id bigint [note: "NULL - областью является всё хранилище storage_id"]
+  stocktake_type_id int [not null]
+  created_by bigint [not null]
+  reviewed_by bigint
+
+  status stocktake_status_enum [not null, note: "Жизненный цикл документа"]
+  business_date date [not null, note: "Дата учёта (текущий день)"]
+  snapshot_at timestamp [not null, note: "Момент снимка учтённых остатков"]
+  submitted_at timestamp [note: "Когда передано директору"]
+  submitted_comment text [note: "Комментарий при передаче директору"]
+  reviewed_at timestamp
+  review_comment text
+  closed_at timestamp [note: "Когда документ закрыт (после применения корректировок)"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Enum stocktake_status_enum {
+  DRAFT       [note: "Черновик / подготовка"]
+  IN_PROGRESS [note: "Идёт подсчёт"]
+  SUBMITTED   [note: "Передано директору"]
+  RETURNED    [note: "На доработку"]
+  APPROVED    [note: "Утверждено директором"]
+  APPLIED     [note: "Корректировки применены"]
+  CANCELLED   [note: "Отменено"]
+}
+
+Table shops_stocktakeline [note: "Связь инвентаризации - партия"] {
+  id bigserial [primary key]
+  stocktake_id bigint [not null]
+  space_id bigint [not null]
+  inventory_lot_id bigint [not null]
+  counted_by bigint [not null]
+
+  counted_at timestamp [not null]
+  quantity_expected int [not null, note: "Учтённый остаток на snapshot_at"]
+  quantity_counted int [not null, note: "Фактически посчитано"]
+  is_expired boolean [not null, default: false, note: "Истёк срок годности на business_date"]
+  comment text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (stocktake_id, space_id, inventory_lot_id) [unique]
+  }
+}
+
+Table shops_stocktakeadjustment [note: "Связь строк инвентаризации с корректирующими движениями партий"] {
+  id bigserial [primary key]
+  stocktake_id bigint [not null]
+  stocktake_line_id bigint [not null, unique]
+  inventory_movement_id bigint [not null, unique, note: "movement_type=ADJUSTMENT"]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table shops_writeoffreason [note: "Справочник причин списания"] {
+  id serial [primary key]
+
+  name varchar(128) [not null, unique, note: "EXPIRY/DAMAGE/THEFT/BREAKAGE/NO_LABEL/LOSS_STOCKTAKE/FORCE_MAJEURE"]
+  is_active boolean [not null, default: false]
+  requires_photo boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table shops_writeoffact [note: "Документ списания"] {
+  id bigserial [primary key]
+  storage_id int [not null]
+  writeoff_reason_id int [not null]
+  created_by bigint [not null]
+  reviewed_by bigint
+
+  status writeoff_status_enum [not null]
+  submitted_at timestamp [note: "Когда отправлено директору"]
+  submitted_comment text
+  reviewed_at timestamp
+  review_comment text
+  approved_at timestamp [note: "Фиксация момента утверждения"]
+  posted_at timestamp [note: "Когда создано движение WRITE_OFF (проведение)"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Enum writeoff_status_enum {
+  DRAFT      [note: "Черновик (создан, редактируется)"]
+  SUBMITTED  [note: "Отправлено директору на утверждение"]
+  RETURNED   [note: "Возвращено на доработку"]
+  APPROVED   [note: "Утверждено директором"]
+  REJECTED   [note: "Отклонено директором"]
+  POSTED     [note: "Проведено (движения WRITE_OFF созданы)"]
+  CANCELLED  [note: "Отменено"]
+}
+
+Table shops_writeoffline [note: "Строки документа списания"] {
+  id bigserial [primary key]
+  writeoff_act_id bigint [not null]
+  space_id bigint [not null, note: "Откуда списываем"]
+  inventory_lot_id bigint [not null]
+
+  quantity int [not null]
+  comment text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (writeoff_act_id, space_id, inventory_lot_id) [unique]
+  }
+}
+
+Table shops_writeoffattachment [note: "Вложения к списанию"] {
+  id bigserial [primary key]
+  writeoff_act_id bigint [not null]
+  uploaded_by bigint [not null]
+
+  uploaded_at timestamp [not null]
+  file_path text [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table shops_writeoffposting [note: "Связь строк списания с движениями партий для списания"] {
+  id bigserial [primary key]
+  writeoff_act_id bigint [not null]
+  writeoff_line_id bigint [not null, unique]
+  inventory_movement_id bigint [not null, unique, note: "movement_type=WRITE_OFF"]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
 // supplies
@@ -342,201 +864,495 @@ TableGroup supplies {
   supplies_supplycontractproduct
   supplies_supply
   supplies_supplyproduct
+  supplies_supplyproductlot
+  supplies_supplydiscrepancy
+  supplies_discrepancyreason
+  supplies_discrepancyattachments
 }
 
 Table supplies_supplier [note: "Поставщик"] {
-  id integer [primary key]
-  name varchar(256)
-  created_at timestamp
-  updated_at timestamp
+  id serial [primary key]
+
+  name varchar(255) [not null]
+  address varchar(255) [not null]
+  ogrn varchar(13) [not null, unique]
+  inn_company varchar(12) [not null, unique]
+  kpp varchar(9) [not null]
+  bank_name varchar(255) [not null]
+  bik varchar(9) [not null]
+  corr_account varchar(20) [not null]
+  checking_account varchar(20) [not null]
+  swift varchar(11)
+  iban varchar(34)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
 Table supplies_suppliercontact [note: "Контактное лицо поставщика"] {
-  id integer [primary key]
-  surname varchar(40)
-  first_name varchar(40)
-  second_name varchar(40)
-  phone varchar(15)
-  email varchar(30)
-  additional_phone varchar(15)
-  created_at timestamp
-  updated_at timestamp
+  id serial [primary key]
+  supplier_id int [not null]
+  passport_id bigint [not null]
 
-  supplier_id integer [not null]
+  surname_contact varchar(40)
+  first_name_contact varchar(40) [not null]
+  second_name_contact varchar(40) [not null]
+  snils varchar(14) [not null, unique]
+  inn_contact char(12) [not null, unique]
+  phone_contact varchar(15) [not null]
+  email_contact varchar(255) [not null]
+  job_title_contact varchar(80) [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
 Table supplies_supplycontract [note: "Контракт на поставки"] {
-  id integer [primary key]
-  created_at timestamp
-  updated_at timestamp
+  id bigserial [primary key]
+  supplier_id int
+  storage_id int [not null]
 
-  shop_id integer [not null]
-  supplier_id integer [not null]
+  is_active boolean [not null, default: false]
+  expiration_date date [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
 Table supplies_supplycontractproduct [note: "Связка продукт - контракт на поставки"] {
-  id integer [primary key]
-  created_at timestamp
-  updated_at timestamp
+  id bigserial [primary key]
+  supply_contract_id bigint [not null]
+  product_id bigint [not null]
 
-  supply_contract_id integer [not null]
-  product_id integer [not null]
+  price numeric(7,2) [not null]
+  quantity int [not null]
+  delivery_frequency delivery_frequency_enum [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Enum delivery_frequency_enum {
+  ONE_TIME
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  ON_DEMAND
 }
 
 Table supplies_supply [note: "Поставка"] {
-  id integer [primary key]
-  date date
-  created_at timestamp
-  updated_at timestamp
+  id bigserial [primary key]
+  storage_id int [not null]
+  supply_contract_id bigint [not null]
+  created_by bigint [not null]
+  reviewed_by bigint
 
-  shop_id integer [not null]
-  supply_contract_id integer [not null]
+  planned_date date [not null]
+  arrived_at timestamp [not null]
+  status supply_status_enum [not null]
+  status_changed_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Enum supply_status_enum {
+  DRAFT             [note: "Создано"]
+  IN_RECEIVING      [note: "Кладовщик вводит фактические данные"]
+  PENDING_APPROVAL  [note: "Требует решения товароведа/ГК"]
+  APPROVED          [note: "Разрешено проводить"]
+  REJECTED          [note: "Отклонено"]
+  CLOSED            [note: "Закрыто"]
 }
 
 Table supplies_supplyproduct [note: "Связка продукт - поставка"] {
-  id integer [primary key]
-  quantity integer
-  purchase_price decimal
-  created_at timestamp
-  updated_at timestamp
+  id bigint [primary key]
+  supply_id bigint [not null]
+  product_id bigint [not null]
+  supply_contract_product_id bigint [not null]
 
-  supply_id integer [not null]
-  product_id integer [not null]
+  quantity_actual_total int [not null, note: "Сумма по связанным партиям"]
+  quantity_expected int [not null]
+  requires_review boolean [not null]
+  status supply_product_status_enum [not null]
+  purchase_price numeric(11, 2) [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Enum supply_product_status_enum {
+  OK          [note: "Окь"]
+  HAS_ISSUES  [note: "Есть несоответствия"]
+  RESOLVED    [note: "Решено"]
+}
+
+Table supplies_supplyproductlot [note: "Фактические партии в продуктах поставки"] {
+  id bigserial [primary key]
+  supply_product_id bigint [not null]
+
+  manufacture_date date
+  expiry_date_actual date
+  quantity_actual int [not null]
+  packaging_condition packaging_condition_enum [not null]
+  status supply_product_lot_status_enum [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Enum packaging_condition_enum {
+  OK      [note: "Окь"]
+  DAMAGED [note: "Есть повреждение упаковки"]
+}
+
+Enum supply_product_lot_status_enum {
+  DRAFT     [note: "Создано"]
+  CONFIRMED [note: "Подтверждено"]
+  ON_HOLD   [note: "На удержании"]
+}
+
+Table supplies_supplydiscrepancy [note: "Несоответствия поставки ожиданиям"] {
+  id bigserial [primary key]
+  supply_product_lot_id bigint [not null]
+  discrepancy_reason_id int [not null]
+  created_by bigint [not null]
+  decided_by bigint
+
+  comment text
+  status supply_discrepancy_status_enum [not null]
+  decided_at timestamp
+  decision_comment text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table supplies_discrepancyreason [note: "Причины несоответствий"] {
+  id serial [primary key]
+
+  name varchar(255) [not null, unique]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Enum supply_discrepancy_status_enum {
+  OPEN        [note: "Открыто"]
+  SENT_TO_HQ  [note: "Отправлено в ГК"]
+  APPROVED    [note: "Утверждено"]
+  REJECTED    [note: "Отклонено"]
+  RESOLVED    [note: "Урегулировано"]
+}
+
+Table supplies_discrepancyattachments [note: "Вложения для несоответствий"] {
+  id bigserial [primary key]
+  supply_discrepancy_id bigint [not null]
+
+  file_path text [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
 // offices
 
 Tablegroup offices {
+  offices_region
+  offices_city
   offices_mainofficefilial
-  offices_shopopeningrequest
+  offices_storageopeningrequest
+}
+
+Table offices_region [note: "Справочник регионов"] {
+  id serial [primary key]
+
+  name varchar(64) [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table offices_city [note: "Справочник городов"] {
+  id serial [primary key]
+  region_id int [not null]
+
+  name varchar(64) [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
 Table offices_mainofficefilial [note: "Филиал головного офиса"]{
-  id integer [primary key]
-  address varchar(128)
-  created_at timestamp
-  updated_at timestamp
-
+  id serial [primary key]
   city_id integer [not null]
-  director_id integer [not null]
+  director bigint [not null]
+
+  cadastral_number varchar(20) [not null, unique]
+  address varchar(128) [not null]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-Table offices_shopopeningrequest [note: "Заявка на открытие магазина"] {
-  id integer [primary key]
+Table offices_storageopeningrequest [note: "Заявка на открытие хранилища"] {
+  id serial [primary key]
+  storage_id int [not null]
+  main_office_filial_id int [not null]
+  confirmed_by bigint
+
   is_confirmed boolean
   confirmation_date date
-  created_at timestamp
-  updated_at timestamp
-
-  shop_id integer [not null]
-  main_office_filial_id integer [not null]
-  employee_who_confirmed integer
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
 
+Ref: shops_product.product_unit_id > shops_productunit.id
 
-Ref: "shops_city"."region_id" < "shops_region"."id"
+Ref: shops_product.product_category_id > shops_productcategory.id
 
-Ref: "shops_shop"."city_id" < "shops_city"."id"
+Ref: shops_productmedia.product_id > shops_product.id
 
-Ref: "shops_product"."unit_id" < "shops_unit"."id"
+Ref: shops_inventorylot.product_id > shops_product.id
 
-Ref: "supplies_supply"."shop_id" < "shops_shop"."id"
+Ref: shops_inventorylot.supply_product_lot > supplies_supplyproductlot.id
 
-Ref: "supplies_supplyproduct"."supply_id" < "supplies_supply"."id"
+Ref: shops_storageprofiles.product_id > shops_product.id
 
-Ref: "supplies_supplyproduct"."product_id" < "shops_product"."id"
+Ref: shops_storage.main_office_filial_id > offices_mainofficefilial.id
 
-Ref: "shops_stoplist"."shop_id" < "shops_shop"."id"
+Ref: shops_storage.storage_type > shops_storagetype.id
 
-Ref: "shops_pricelist"."pricelist_type_id" < "shops_pricelisttype"."id"
+Ref: shops_storage.director - employees_employee.id
 
-Ref: "shops_stoplistproduct"."stoplist_transfer_reason_id" < "shops_stoplisttransferreason"."id"
+Ref: shops_space.storage_id > shops_storage.id
 
-Ref: "shops_stoplistproduct"."stoplist_id" < "shops_stoplist"."id"
+Ref: shops_space.space_type_id > shops_spacetype.id
 
-Ref: "shops_stoplistproduct"."product_id" < "shops_product"."id"
+Ref: shops_space.parent_space_id > shops_space.id
 
-Ref: "shops_pricelist"."product_id" < "shops_product"."id"
+Ref: shops_inventorybalance.inventory_lot_id > shops_inventorylot.id
 
-Ref: "shops_pricing_constraint"."pricelist_id" < "shops_pricelist"."id"
+Ref: shops_inventorybalance.storage_id > shops_storage.id
 
-Ref: "shops_product"."category_id" < "shops_category"."id"
+Ref: shops_inventorybalance.space_id > shops_space.id
 
-Ref: "shops_inventory"."shop_id" < "shops_shop"."id"
+Ref: shops_inventorymovement.storage_id > shops_storage.id
 
-Ref: "shops_inventoryproduct"."inventory_id" < "shops_inventory"."id"
+Ref: shops_inventorymovement.inventory_lot_id > shops_inventorylot.id
 
-Ref: "shops_writeoffact"."writeoff_reason_id" < "shops_writeoffreason"."id"
+Ref: shops_inventorymovement.space_from_id > shops_space.id
 
-Ref: "shops_writeoffact"."shop_id" < "shops_shop"."id"
+Ref: shops_inventorymovement.space_to_id > shops_space.id
 
-Ref: "shops_writeoffact"."product_id" < "shops_product"."id"
+Ref: shops_inventorymovement.created_by > employees_employee.id
 
-Ref: "shops_inventoryproduct"."product_id" < "shops_product"."id"
+Ref: shops_inventorymovement.movement_type > shops_movementtype.id
 
-Ref: "shops_sale"."shop_id" < "shops_shop"."id"
+Ref: shops_inventorymovement.supply_id > supplies_supply.id
 
-Ref: "shops_saleproduct"."sale_id" < "shops_sale"."id"
+Ref: shops_inventorymovement.sales_receipt_id > shops_salesreceipt.id
 
-Ref: "shops_saleproduct"."product_id" < "shops_product"."id"
+Ref: shops_inventorymovement.writeoff_act_id > shops_writeoffact.id
 
-Ref: "shops_space"."shop_id" < "shops_shop"."id"
+Ref: shops_inventorymovement.stocktake_id > shops_stocktake.id
 
-Ref: "shops_space"."space_type_id" < "shops_spacetype"."id"
+Ref: shops_pricelist.mx_storage_id > shops_storage.id
 
-Ref: "shops_spaceproduct"."product_id" < "shops_product"."id"
+Ref: shopspricelistproduct.price_list_id > shops_pricelist.id
 
-Ref: "shops_spaceproduct"."space_id" < "shops_space"."id"
+Ref: shopspricelistproduct.price_list_type_id > shops_pricelisttype.id
 
-Ref: "shops_productmovement"."space_from_id" < "shops_space"."id"
+Ref: shopspricelistproduct.product_id > shops_product.id
 
-Ref: "shops_productmovement"."space_to_id" < "shops_space"."id"
+Ref: shopspricelistproduct.price_list_basis_id > shops_pricelistbasis.id
 
-Ref: "shops_productmovement"."product_id" < "shops_product"."id"
+Ref: shops_pricingconstraint.storage_id > shops_storage.id
 
-Ref: "supplies_supplycontract"."supplier_id" < "supplies_supplier"."id"
+Ref: shops_pricingconstraint.product_category_id > shops_productcategory.id
 
-Ref: "supplies_supplycontract"."shop_id" < "shops_shop"."id"
+Ref: shops_pricingconstraint.product_id > shops_product.id
 
-Ref: "supplies_supply"."supply_contract_id" < "supplies_supplycontract"."id"
+Ref: shops_pricingrun.storage_id > shops_storage.id
 
-Ref: "supplies_supplycontractproduct"."supply_contract_id" < "supplies_supplycontract"."id"
+Ref: shops_pricingrun.created_by > employees_employee.id
 
-Ref: "supplies_supplycontractproduct"."product_id" < "shops_product"."id"
+Ref: shops_storeprice.product_id > shops_product.id
 
-Ref: "supplies_suppliercontact"."supplier_id" < "supplies_supplier"."id"
+Ref: shops_storeprice.price_list_type_id > shops_pricelisttype.id
 
-Ref: "offices_mainofficefilial"."city_id" < "shops_city"."id"
+Ref: shops_storeprice.price_list_basis_id > shops_pricelistbasis.id
 
-Ref: "shops_shop"."main_office_filial_id" < "offices_mainofficefilial"."id"
+Ref: shops_storeprice.pricing_run_id > shops_pricingrun.id
 
-Ref: "offices_shopopeningrequest"."main_office_filial_id" < "offices_mainofficefilial"."id"
+Ref: shops_coupon.storage_id > shops_storage.id
 
-Ref: "offices_shopopeningrequest"."shop_id" < "shops_shop"."id"
+Ref: shops_coupon.product_id > shops_product.id
 
-Ref: "offices_mainofficefilial"."director_id" < "employees_employee"."id"
+Ref: shops_coupon.discount_type_id > shops_coupondiscounttype.id
 
-Ref: "offices_shopopeningrequest"."employee_who_confirmed" < "employees_employee"."id"
+Ref: shops_salesreceipt.storage_id > shops_storage.id
 
-Ref: "shops_shop"."director_id" < "employees_employee"."id"
+Ref: shops_salesreceipt.cashier_id > employees_employee.id
 
-Ref: "employees_employee"."passport_id" < "employees_passport"."id"
+Ref: shops_salesreceipt.time_session_id > employees_timesession.id
 
-Ref: "employees_employee"."job_position_id" < "employees_jobposition"."id"
+Ref: shops_salesreceipt.payment_method_id > shops_paymentmethod.id
 
-Ref: "shops_productmovement"."transport_id" < "shops_transport"."id"
+Ref: shops_salesreceiptline.sales_receipt_id > shops_salesreceipt.id
 
-Ref: "shops_transport"."driver_id" < "employees_employee"."id"
+Ref: shops_salesreceiptline.inventory_lot_id > shops_inventorylot.id
 
-Ref: "shops_writeoffact"."employee_wrote_off" < "employees_employee"."id"
+Ref: shops_salesreceiptline.price_list_type_id > shops_pricelisttype.id
 
-Ref: "employees_workingrate"."id" < "employees_employee"."working_rate_id"
+Ref: shops_salesreceiptline.price_list_basis_id > shops_pricelistbasis.id
 
-Ref: "auth_groupemployee"."employee_id" < "employees_employee"."id"
+Ref: shops_salesreceiptline.coupon_id > shops_coupon.id
 
-Ref: "auth_groupemployee"."group_id" < "auth_group"."id"
+Ref: shops_stoplist.storage_id > shops_storage.id
 
-Ref: "auth_permissiongroup"."group_id" < "auth_group"."id"
+Ref: shops_stoplist.pricing_run_id > shops_pricingrun.id
 
-Ref: "auth_permissiongroup"."permission_id" < "auth_permission"."id"
+Ref: shops_stoplist.created_by > employees_employee.id
+
+Ref: shops_stoplistproduct.stoplist_id > shops_stoplist.id
+
+Ref: shops_stoplistproduct.product_id > shops_product.id
+
+Ref: shops_stoplistproduct.price_list_type_id > shops_pricelisttype.id
+
+Ref: shops_stoplistproduct.price_list_basis_id > shops_pricelistbasis.id
+
+Ref: shops_stoplistproduct.stoplist_reason_id > shops_stoplistreason.id
+
+Ref: shops_stocktake.storage_id > shops_storage.id
+
+Ref: shops_stocktake.space_id > shops_space.id
+
+Ref: shops_stocktake.stocktake_type_id > shops_stocktaketype.id
+
+Ref: shops_stocktake.created_by > employees_employee.id
+
+Ref: shops_stocktake.reviewed_by > employees_employee.id
+
+Ref: shops_stocktakeline.stocktake_id > shops_stocktake.id
+
+Ref: shops_stocktakeline.space_id > shops_space.id
+
+Ref: shops_stocktakeline.inventory_lot_id > shops_inventorylot.id
+
+Ref: shops_stocktakeline.counted_by > employees_employee.id
+
+Ref: shops_stocktakeadjustment.stocktake_id > shops_stocktake.id
+
+Ref: shops_stocktakeadjustment.stocktake_line_id > shops_stocktakeline.id
+
+Ref: shops_stocktakeadjustment.inventory_movement_id > shops_inventorymovement.id
+
+Ref: shops_writeoffact.storage_id > shops_storage.id
+
+Ref: shops_writeoffact.writeoff_reason_id > shops_writeoffreason.id
+
+Ref: shops_writeoffact.created_by > employees_employee.id
+
+Ref: shops_writeoffact.reviewed_by > employees_employee.id
+
+Ref: shops_writeoffline.writeoff_act_id > shops_writeoffact.id
+
+Ref: shops_writeoffline.space_id > shops_space.id
+
+Ref: shops_writeoffline.inventory_lot_id > shops_inventorylot.id
+
+Ref: shops_writeoffattachment.writeoff_act_id > shops_writeoffact.id
+
+Ref: shops_writeoffattachment.uploaded_by > employees_employee.id
+
+Ref: shops_writeoffposting.writeoff_act_id > shops_writeoffact.id
+
+Ref: shops_writeoffposting.writeoff_line_id > shops_writeoffline.id
+
+Ref: shops_writeoffposting.inventory_movement_id > shops_inventorymovement.id
+
+Ref: supplies_supply.storage_id > shops_storage.id
+
+Ref: supplies_supply.created_by > employees_employee.id
+
+Ref: supplies_supply.reviewed_by > employees_employee.id
+
+Ref: supplies_supplyproduct.supply_id > supplies_supply.id
+
+Ref: supplies_supplyproduct.product_id > shops_product.id
+
+Ref: supplies_supplyproduct.supply_contract_product_id > supplies_supplycontractproduct.id
+
+Ref: supplies_supplyproductlot.supply_product_id > supplies_supplyproduct.id
+
+Ref: supplies_supplydiscrepancy.supply_product_lot_id > supplies_supplyproductlot.id
+
+Ref: supplies_supplydiscrepancy.discrepancy_reason_id > supplies_discrepancyreason.id
+
+Ref: supplies_supplydiscrepancy.created_by > employees_employee.id
+
+Ref: supplies_supplydiscrepancy.decided_by > employees_employee.id
+
+Ref: supplies_discrepancyattachments.supply_discrepancy_id > supplies_supplydiscrepancy.id
+
+Ref: supplies_supplycontract.supplier_id > supplies_supplier.id
+
+Ref: supplies_supplycontract.storage_id > shops_storage.id
+
+Ref: supplies_supply.supply_contract_id > supplies_supplycontract.id
+
+Ref: supplies_supplycontractproduct.supply_contract_id > supplies_supplycontract.id
+
+Ref: supplies_supplycontractproduct.product_id > shops_product.id
+
+Ref: supplies_suppliercontact.supplier_id > supplies_supplier.id
+
+Ref: supplies_suppliercontact.passport_id > employees_passport.id
+
+Ref: offices_city.region_id > offices_region.id
+
+Ref: offices_mainofficefilial.city_id > offices_city.id
+
+Ref: offices_mainofficefilial.director - employees_employee.id
+
+Ref: offices_storageopeningrequest.main_office_filial_id > offices_mainofficefilial.id
+
+Ref: offices_storageopeningrequest.storage_id > shops_storage.id
+
+Ref: offices_storageopeningrequest.confirmed_by > employees_employee.id
+
+Ref: employees_employee.passport_id > employees_passport.id
+
+Ref: employees_employee.job_position_id > employees_jobposition.id
+
+Ref: employees_employee.working_rate_id > employees_workingrate.id
+
+Ref: employees_salary.jobposition_id > employees_jobposition.id
+
+Ref: employees_salary.workingrate_id > employees_workingrate.id
+
+Ref: employees_workplace.storage_id > shops_storage.id
+
+Ref: employees_workplace.office_filial_id > offices_mainofficefilial.id
+
+Ref: employees_workplace.id > employees_employee.workplace_id
+
+Ref: employees_leaverequest.employee_id > employees_employee.id
+
+Ref: employees_leaverequest.approved_by > employees_employee.id
+
+Ref: employees_leaverequest.leave_type_id > employees_leavetype.id
+
+Ref: employees_leaverequestattachment.leave_request_id > employees_leaverequest.id
+
+Ref: employees_annualleavebalance.employee_id > employees_employee.id
+
+Ref: employees_timeentry.employee_id > employees_employee.id
+
+Ref: employees_timesession.employee_id > employees_employee.id
+
+Ref: employees_timesession.close_reason_id > employees_timesessionclosereason.id
+
+Ref: employees_timeday.employee_id > employees_employee.id
+
+Ref: employees_timeday.adjustment_reason > employees_timesessionclosereason.id
+
+Ref: auth_groupemployee.employee_id > employees_employee.id
+
+Ref: auth_groupemployee.group_id > auth_group.id
+
+Ref: auth_permissiongroup.group_id > auth_group.id
+
+Ref: auth_permissiongroup.permission_id > auth_permission.id
