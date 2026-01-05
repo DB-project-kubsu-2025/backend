@@ -49,7 +49,7 @@ class Product(AutoDateMixin):
     expiration_days = models.PositiveSmallIntegerField(verbose_name='Кол-во дней до истечения срока годности')
     producer_name = models.CharField(verbose_name='Производитель', max_length=128)
     producer_code = models.UUIDField(verbose_name='Код производителя')
-    country_name = models.CharField(verbose_name='Страна', max_length=64)
+    country_name = models.CharField(verbose_name='Страна', max_length=64, db_index=True)
     additional_info = models.CharField(verbose_name='Дополнительная информация', max_length=300)
 
     class Meta:
@@ -119,7 +119,7 @@ class ProductInventoryLot(AutoDateMixin):
         verbose_name='Продукт в поставке',
         on_delete=models.PROTECT,
     )
-    manufacture_date = models.DateField(verbose_name='Дата изготовления')
+    manufacture_date = models.DateField(verbose_name='Дата изготовления', db_index=True)
     expiry_date = models.DateField(verbose_name='Дата истечения срока годности')
     barcode = models.UUIDField(verbose_name='Штрих-код')
 
@@ -390,7 +390,7 @@ class PriceList(AutoDateMixin):
         on_delete=models.PROTECT,
     )
     received_at = models.DateTimeField(verbose_name='Время приёмки')
-    business_date = models.DateField(verbose_name='День, когда прайс-лист действует')
+    business_date = models.DateField(verbose_name='День, когда прайс-лист действует', db_index=True)
     status = models.CharField(
         verbose_name='Статус',
         max_length=20,
@@ -576,7 +576,7 @@ class PricingRun(AutoDateMixin):
         choices=STATUSES,
         default=STARTED,
     )
-    business_date = models.DateField(verbose_name='Дата, когда приказ действует')
+    business_date = models.DateField(verbose_name='Дата, когда приказ действует', db_index=True)
     started_at = models.DateTimeField(verbose_name='Время начала действия')
     finished_at = models.DateTimeField(verbose_name='Время окончания действия', blank=True, null=True)
     confirmed_at = models.DateTimeField(verbose_name='Время подтверждения', blank=True, null=True)
@@ -603,7 +603,7 @@ class StorePrice(AutoDateMixin):
         verbose_name='Продукт',
         on_delete=models.PROTECT,
     )
-    business_date = models.DateField(verbose_name='Дата, когда приказ действует', default=timezone.now)
+    business_date = models.DateField(verbose_name='Дата, когда приказ действует', default=timezone.now, db_index=True)
     price_list_type = models.ForeignKey(
         'PriceListType',
         verbose_name='Тип прайс-листа',
@@ -838,7 +838,7 @@ class StopList(AutoDateMixin):
         verbose_name='Кем создан',
         on_delete=models.PROTECT,
     )
-    business_date = models.DateField(verbose_name='Дата действия')
+    business_date = models.DateField(verbose_name='Дата действия', db_index=True)
     status = models.CharField(
         verbose_name='Статус',
         max_length=20,
@@ -1010,7 +1010,7 @@ class StockTake(AutoDateMixin):
         choices=STATUSES,
         default=DRAFT,
     )
-    business_date = models.DateField(verbose_name='Дата учёта', default=timezone.now)
+    business_date = models.DateField(verbose_name='Дата учёта', default=timezone.now, db_index=True)
     snapshot_at = models.DateTimeField(verbose_name='Время снимка учтенных остатков')
     approved_at = models.DateTimeField(verbose_name='Время подтверждения директором', null=True, blank=True)
     director_comment = models.CharField(verbose_name='Комментарий директора', default='', blank=True)
