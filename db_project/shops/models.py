@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from common_utils.mixins import AutoDateMixin
-from shops.utils import generate_file_path
+from shops.utils import generate_file_path, generate_file_path_for_writeoff
 
 
 class ProductUnit(AutoDateMixin):
@@ -951,4 +951,300 @@ class StockTakeType(AutoDateMixin):
         return self.name
 
 
+class StockTake(AutoDateMixin):
+    """Инвентаризация"""
 
+    DRAFT = 'draft'
+    IN_PROGRESS = 'in_progress'
+    SUBMITTED = 'submitted'
+    RETURNED = 'returned'
+    APPROVED = 'approved'
+    APPLIED = 'applied'
+    CANCELED = 'canceled'
+    STATUSES = {
+        DRAFT: 'Создано',
+        IN_PROGRESS: 'Идет подсчет',
+        SUBMITTED: 'Передано директору',
+        RETURNED: 'На доработку',
+        APPROVED: 'Утверждено директором',
+        APPLIED: 'Применены корректировки',
+        CANCELED: 'Отменена',
+    }
+
+    storage = models.ForeignKey(
+        'Storage',
+        verbose_name='Хранилище',
+        on_delete=models.PROTECT,
+    )
+    space = models.ForeignKey(
+        'Space',
+        verbose_name='Место',
+        help_text='Если пустое, то областью инвентаризации является все хранилище storage',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    stocktake_type = models.ForeignKey(
+        'StockTakeType',
+        verbose_name='Тип инвентаризации',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    created_by = models.ForeignKey(
+        'employees.Employee',
+        verbose_name='Кем создано',
+        on_delete=models.PROTECT,
+        related_name='stocktypes_created',
+    )
+    reviewed_by = models.ForeignKey(
+        'employees.Employee',
+        verbose_name='Кем проведено',
+        on_delete=models.PROTECT,
+        related_name='stocktypes_reviewed',
+        null=True,
+        blank=True,
+    )
+    status = models.CharField(
+        verbose_name='Статус',
+        max_length=20,
+        choices=STATUSES,
+        default=DRAFT,
+    )
+    business_date = models.DateField(verbose_name='Дата учёта', default=timezone.now)
+    snapshot_at = models.DateTimeField(verbose_name='Время снимка учтенных остатков')
+    approved_at = models.DateTimeField(verbose_name='Время подтверждения директором', null=True, blank=True)
+    director_comment = models.CharField(verbose_name='Комментарий директора', default='', blank=True)
+    reviewed_at = models.DateTimeField(verbose_name='Время проведения', null=True, blank=True)
+    reviewer_comment = models.CharField(verbose_name='Комментарий инвентаризатора', default='', blank=True)
+    closed_at = models.DateTimeField(verbose_name='Время закрытия инвентаризации', null=True, blank=True)
+    inventory_lots = models.ManyToManyField(
+        'InventoryLot',
+        verbose_name='Партии товара',
+        through='StockTakeLine',
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = 'Инвентаризация'
+        verbose_name_plural = 'Инвентаризации'
+
+    def __str__(self):
+        return f'Инвентаризация №{self.id} в хранилище {self.storage} от {self.business_date}'
+
+
+class StockTakeLine(AutoDateMixin):
+    """Связь инвентаризация - партия"""
+
+    stocktake = models.ForeignKey(
+        'StockTake',
+        verbose_name='Инвентаризация',
+        on_delete=models.PROTECT,
+    )
+    space = models.ForeignKey(
+        'Space',
+        verbose_name='Место',
+        on_delete=models.PROTECT,
+    )
+    inventory_lot = models.ForeignKey(
+        'InventoryLot',
+        verbose_name='Партия',
+        on_delete=models.PROTECT,
+    )
+    counted_by = models.ForeignKey(
+        'employees.Employee',
+        verbose_name='Кем подсчитано',
+        on_delete=models.PROTECT,
+    )
+    counted_at = models.DateTimeField(verbose_name='Время подсчета')
+    quantity_expected = models.PositiveSmallIntegerField(verbose_name='Ожидаемое кол-во')
+    quantity_actual = models.PositiveSmallIntegerField(verbose_name='Фактическое кол-во')
+    is_expired = models.BooleanField(verbose_name='Истек срок годности на текущий момент', default=False)
+    comment = models.CharField(verbose_name='Комментарий', default='', blank=True)
+
+    class Meta:
+        verbose_name = 'Связь инвентаризация - партия'
+        verbose_name_plural = 'Связи инвентаризация - партия'
+
+    def __str__(self):
+        return f'Связь №{self.id} {self.stocktake_id} - {self.inventory_lot_id}'
+
+
+class StockTakeAdjustment(AutoDateMixin):
+    """Связь инвентаризация - движения партий"""
+
+    stocktake = models.ForeignKey(
+        'StockTake',
+        verbose_name='Инвентаризация',
+        on_delete=models.PROTECT,
+    )
+    stocktake_line = models.ForeignKey(
+        'StockTakeLine',
+        verbose_name='Связь инвентаризации и партии',
+        on_delete=models.PROTECT,
+    )
+    inventory_movement = models.ForeignKey(
+        'InventoryMovement',
+        verbose_name='Перемещение партии по хранилищу',
+        on_delete=models.PROTECT,
+    )
+
+    class Meta:
+        verbose_name = 'Связь инвентаризация - движения партий'
+
+
+class WriteoffReason(AutoDateMixin):
+    """Причина списания"""
+
+    name = models.CharField(verbose_name='Название', max_length=64, unique=True)
+    is_active = models.BooleanField(verbose_name='Активно', default=False)
+    requires_photo = models.BooleanField(verbose_name='Требует фото', default=False)
+
+    class Meta:
+        verbose_name = 'Причина списания'
+        verbose_name_plural = 'Причины списания'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class WriteOffAct(AutoDateMixin):
+    """Акт списания"""
+
+    DRAFT = 'draft'
+    SENT_TO_DIRECTOR = 'sent_to_director'
+    RETURNED = 'returned'
+    APPROVED = 'approved'
+    REJECTED = 'rejected'
+    POSTED = 'posted'
+    CANCELED = 'canceled'
+    STATUSES = {
+        DRAFT: 'Создан',
+        SENT_TO_DIRECTOR: 'Отправлено директору на утверждение',
+        RETURNED: 'Возвращено на доработку',
+        APPROVED: 'Утверждено директором',
+        REJECTED: 'Отклонено директором',
+        POSTED: 'Проведено',
+        CANCELED: 'Отменено',
+    }
+
+    storage = models.ForeignKey(
+        'Storage',
+        verbose_name='Хранилище',
+        on_delete=models.PROTECT,
+        related_name='writeoff_acts',
+    )
+    writeoff_reason = models.ForeignKey(
+        'WriteoffReason',
+        verbose_name='Причина списания',
+        on_delete=models.PROTECT,
+    )
+    created_by = models.ForeignKey(
+        'employees.Employee',
+        verbose_name='Кем создан',
+        on_delete=models.PROTECT,
+        related_name='created_writeoff_acts',
+    )
+    reviewed_by = models.ForeignKey(
+        'employees.Employee',
+        verbose_name='Кем проверен',
+        on_delete=models.PROTECT,
+        related_name='reviewed_writeoff_acts',
+    )
+    status = models.CharField(
+        verbose_name='Статус',
+        max_length=20,
+        choices=STATUSES,
+    )
+    submitted_at = models.DateTimeField(verbose_name='Время подтверждения', null=True, blank=True)
+    submit_comment = models.CharField(verbose_name='Комментарий при подтверждении', default='', blank=True)
+    reviewed_at = models.DateTimeField(verbose_name='Время проведения', null=True, blank=True)
+    review_comment = models.CharField(verbose_name='Комментарий при проведении', default='', blank=True)
+    approved_at = models.DateTimeField(verbose_name='Время подтверждения', null=True, blank=True)
+    posted_at = models.DateTimeField(verbose_name='Время списания', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Акт списания'
+        verbose_name_plural = 'Акты списания'
+
+    def __str__(self):
+        return f'Акт списания №{self.id}'
+
+
+class WriteoffLine(AutoDateMixin):
+    """Строка документа списания"""
+
+    writeoff_act = models.ForeignKey(
+        'WriteOffAct',
+        verbose_name='Акт списания',
+        on_delete=models.PROTECT,
+    )
+    space = models.ForeignKey(
+        'Space',
+        verbose_name='Место',
+        on_delete=models.PROTECT,
+    )
+    inventory_lot = models.ForeignKey(
+        'InventoryLot',
+        verbose_name='Партия товара',
+        on_delete=models.PROTECT,
+    )
+    quantity = models.PositiveSmallIntegerField(verbose_name='Кол-во')
+    comment = models.CharField(verbose_name='Комментарий', default='', blank=True)
+
+    class Meta:
+        verbose_name = 'Строка документа списания'
+        verbose_name_plural = 'Строки документов списания'
+
+    def __str__(self):
+        return f'Строка документа №{self.writeoff_act_id} по партии {self.inventory_lot}'
+
+
+class WriteoffAttachment(AutoDateMixin):
+    """Вложение к акту списания"""
+
+    writeoff_act = models.ForeignKey(
+        'WriteOffAct',
+        verbose_name='Акт списания',
+        on_delete=models.PROTECT,
+        related_name='attachments',
+    )
+    image = models.ImageField(
+        upload_to=generate_file_path_for_writeoff,
+        verbose_name='Изображение',
+    )
+
+    class Meta:
+        verbose_name = 'Вложение к акту списания'
+        verbose_name_plural = 'Вложения к актам списания'
+
+    def __str__(self):
+        return f'Вложение №{self.id} к акту №{self.writeoff_act_id}'
+
+
+class WriteoffPosting(AutoDateMixin):
+    """Связь акта списания с движениями партий для списания"""
+
+    writeoff_act = models.ForeignKey(
+        'WriteOffAct',
+        verbose_name='Акт списания',
+        on_delete=models.PROTECT,
+    )
+    writeoff_line = models.ForeignKey(
+        'WriteoffLine',
+        verbose_name='Строка документа списания',
+        on_delete=models.PROTECT,
+    )
+    inventory_movement = models.ForeignKey(
+        'InventoryMovement',
+        verbose_name='Перемещение партии по хранилищу',
+        on_delete=models.PROTECT,
+    )
+
+    class Meta:
+        verbose_name = 'Связь акта списания с движениями партий для списания'
+        verbose_name_plural = 'Связи акта списания с движениями партий для списания'
+
+    def __str__(self):
+        return f'Связь №{self.id}'
