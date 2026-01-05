@@ -934,3 +934,21 @@ class StopListProduct(AutoDateMixin):
 
     def __str__(self):
         return f'Продукт {self.product} в стоп-листе {self.stop_list}'
+
+
+class StockTakeType(AutoDateMixin):
+    """Тип инвентаризации"""
+
+    name = models.CharField(verbose_name='Название', max_length=64, unique=True)
+    is_active = models.BooleanField(verbose_name='Активен', default=False)
+
+    class Meta:
+        verbose_name = 'Тип инвентаризации'
+        verbose_name_plural = 'Типы инвентаризации'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+
