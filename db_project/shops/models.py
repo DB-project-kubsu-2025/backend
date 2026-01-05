@@ -804,3 +804,133 @@ class SalesReceiptLine(AutoDateMixin):
 
     def __str__(self):
         return f'Связка №{self.id} {self.sale_receipt} {self.inventory_lot}'
+
+
+class StopList(AutoDateMixin):
+    """Стоп-лист"""
+
+    DRAFT = 'draft'
+    GENERATED = 'generated'
+    SENT_TO_HQ = 'sent_to_hq'
+    CONFIRMED = 'confirmed'
+    REJECTED = 'rejected'
+    CLOSED = 'closed'
+    STATUSES = {
+        DRAFT: 'Создан',
+        GENERATED: 'Сформирован',
+        SENT_TO_HQ: 'Отправлен в ГК',
+        CONFIRMED: 'Подтвержден',
+        REJECTED: 'Отказан',
+        CLOSED: 'Закрыт',
+    }
+
+    storage = models.ForeignKey(
+        'Storage',
+        verbose_name='Хранилище',
+        on_delete=models.PROTECT,
+    )
+    pricing_run = models.ForeignKey(
+        'PricingRun',
+        verbose_name='Приказ на формирование цен в хранилище',
+        on_delete=models.PROTECT,
+    )
+    created_by = models.ForeignKey(
+        'employees.Employee',
+        verbose_name='Кем создан',
+        on_delete=models.PROTECT,
+    )
+    business_date = models.DateField(verbose_name='Дата действия')
+    status = models.CharField(
+        verbose_name='Статус',
+        max_length=20,
+        choices=STATUSES,
+        default=DRAFT,
+    )
+    sent_to_hq_at = models.DateTimeField(verbose_name='Время отправки в ГК', null=True, blank=True)
+    hq_comment = models.CharField(verbose_name='Комментарий для ГК', blank=True, default='')
+    closed_at = models.DateTimeField(verbose_name='Время закрытия', blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Стоп-лист'
+        verbose_name_plural = 'Стоп-листы'
+
+    def __str__(self):
+        return f'Стоп лист №{self.id} по {self.storage} от {self.business_date}'
+
+
+class StopListReason(AutoDateMixin):
+    """Причина переноса в стоп-лист"""
+
+    name = models.CharField(verbose_name='Название', max_length=64, unique=True)
+
+    class Meta:
+        verbose_name = 'Причина переноса в стоп-лист'
+        verbose_name_plural = 'Причины переноса в стоп-лист'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class StopListProduct(AutoDateMixin):
+    """Продукт в стоп-листе"""
+
+    OPEN = 'open'
+    SENT_TO_HQ = 'sent_to_hq'
+    HQ_REPLIED = 'hq_replied'
+    RESOLVED = 'resolved'
+    IGNORED = 'ignored'
+    STATUSES = {
+        OPEN: 'Открыт',
+        SENT_TO_HQ: 'Отправлен в ГК',
+        HQ_REPLIED: 'Получен ответ от ГК',
+        RESOLVED: 'Решен',
+        IGNORED: 'Проигнорирован',
+    }
+
+    stop_list = models.ForeignKey(
+        'StopList',
+        verbose_name='Стоп-лист',
+        on_delete=models.PROTECT,
+    )
+    product = models.ForeignKey(
+        'Product',
+        verbose_name='Продукт',
+        on_delete=models.PROTECT,
+    )
+    price_list_type = models.ForeignKey(
+        'PriceListType',
+        verbose_name='Тип прайс-листа',
+        on_delete=models.PROTECT,
+    )
+    price_list_base = models.ForeignKey(
+        'PriceListBase',
+        verbose_name='Основание формирования прайс-листа',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    stop_list_reason = models.ForeignKey(
+        'StopListReason',
+        verbose_name='Причина попадания в стоп-лист',
+        on_delete=models.PROTECT,
+    )
+    status = models.CharField(
+        verbose_name='Статус',
+        max_length=20,
+        choices=STATUSES,
+        default=OPEN,
+    )
+    input_cost_vh = models.PositiveSmallIntegerField(verbose_name='Входная цена')
+    yesterday_price = models.PositiveSmallIntegerField(verbose_name='Вчерашняя цена')
+    candidate_price = models.PositiveSmallIntegerField(
+        verbose_name='Минимальная найденная итоговая цена до ограничений',
+    )
+    final_price_applied = models.PositiveSmallIntegerField(verbose_name='Финальная примененная цена')
+
+    class Meta:
+        verbose_name = 'Продукт в стоп-листе'
+        verbose_name_plural = 'Продукты в стоп-листах'
+
+    def __str__(self):
+        return f'Продукт {self.product} в стоп-листе {self.stop_list}'
