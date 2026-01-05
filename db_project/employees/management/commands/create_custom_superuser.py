@@ -15,6 +15,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Метод выполнения команды"""
+        if Employee.objects.filter(username='admin').exists():
+            return
+
         admin_passport = Passport.objects.create(
             type=constants.SIMPLE,
             series='0000',
@@ -25,7 +28,6 @@ class Command(BaseCommand):
             registration_address='',
             residential_address='',
         )
-
         employee = Employee(
             is_staff=True,
             is_superuser=True,
