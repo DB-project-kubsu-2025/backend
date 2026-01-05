@@ -1,6 +1,7 @@
 from pickle import GLOBAL
 
 from django.db import models
+from django.utils import timezone
 
 from common_utils.mixins import AutoDateMixin
 from shops.utils import generate_file_path
@@ -603,6 +604,7 @@ class StorePrice(AutoDateMixin):
         verbose_name='Продукт',
         on_delete=models.PROTECT,
     )
+    business_date = models.DateField(verbose_name='Дата, когда приказ действует', default=timezone.now)
     price_list_type = models.ForeignKey(
         'PriceListType',
         verbose_name='Тип прайс-листа',
