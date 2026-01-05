@@ -131,8 +131,8 @@ class Employee(AbstractUser, AutoDateMixin):
     )
     snils = models.CharField(verbose_name='СНИЛС', max_length=11, unique=True)
     inn = models.CharField(verbose_name='ИНН', max_length=12, unique=True)
+    phone = models.CharField(verbose_name='Телефон', max_length=11, blank=True, default='')
     work_phone = models.CharField(verbose_name='Рабочий телефон', max_length=11)
-    phone = models.CharField(verbose_name='Рабочий телефон', max_length=11, blank=True, default='')
 
     class Meta:
         verbose_name = 'Работник'
