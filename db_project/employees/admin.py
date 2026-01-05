@@ -56,6 +56,7 @@ class EmployeeAdmin(UserAdmin):
     add_form = UserCreationForm
     form = UserChangeForm
     list_display = ['work_phone', 'last_name', 'first_name', 'second_name', 'username', 'date_joined']
+    raw_id_fields = ['passport', 'workplace']
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
