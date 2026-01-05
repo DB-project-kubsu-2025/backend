@@ -9,6 +9,7 @@
 
 1. В проекте есть файл `db_project/db_project/.env.example`. В той же директории, где лежит `.env.example` необходимо создать файл `.env` и скопировать в него содержимое файла `.env.example` 
 2. В папку `./frontend` необходимо стянуть репозиторий frontend-части проекта (https://github.com/DB-project-kubsu-2025/frontend)
+    _с некоторой периодичностью frontend надо обновлять (git pull origin main или git fetch origin main:main)_
 3. В .env заполнить переменные `ALLOWED_HOSTS` и `SECRET_KEY`. В первую переменную необходимо написать IP-адрес своего устройства, во вторую - любой текст
 4. Запустить docker desktop (он должен быть запущен)
 5. Сгенерировать ssl-сертификаты следующей командой:
@@ -21,25 +22,12 @@
    <ip-адрес> admin.crm.com
    ```
    и не забыть сохранить
-7. В терминале в корне проекта запустить команду:
-    ```bash
-    docker compose build
-    ```
-8. В том же терминале запустить команду:
+7. В том же терминале запустить команду:
     ```bash
     docker compose up
     ```
-9. Посмотрите IP своего устройства, далее в браузере перейдите по IP и по порту 8050, URL должен быть примерно такой: `http://192.168.0.90:8050/admin`
-10. В терминале выполните следующую команду:
-     ```bash
-     docker exec db_project-app-1 poetry run python3 manage.py migrate
-     ```
-11. Также в терминале запустите еще одну команду:
-     ```bash
-     docker exec db_project-app-1 poetry run python3 manage.py create_custom_superuser
-     ```
-12. Запустить frontend
 При переходе в браузере на страницу `https://crm.com/` должна отобразиться форма авторизации
+При переходе в браузере на страницу `https://crm.com/admin` можно попасть в админ-панель Django. На тестовом окружении логин и пароль суперпользователя: admin 1234
 
 ## Настройка интерпретатора в PyCharm Professional
 1. Settings -> Project -> Python Interpreter -> Add Interpreter -> On docker compose
