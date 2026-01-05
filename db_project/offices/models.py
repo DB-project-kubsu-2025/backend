@@ -61,6 +61,32 @@ class MainOfficeFilial(AutoDateMixin):
         return f'Филиал ГК по адресу: {self.city.name} {self.address}'
 
 
-# class StorageOpeningRequest(AutoDateMixin):
-#     """Запрос на открытие ТТ/хранилища"""
-#     # todo:
+class StorageOpeningRequest(AutoDateMixin):
+    """Запрос на открытие ТТ/хранилища"""
+
+    storage = models.ForeignKey(
+        'shops.Storage',
+        verbose_name='Хранилище',
+        on_delete=models.PROTECT,
+    )
+    main_office_filial = models.ForeignKey(
+        'offices.MainOfficeFilial',
+        verbose_name='Филиал ГК',
+        on_delete=models.PROTECT,
+    )
+    confirmed_by = models.ForeignKey(
+        'employees.Employee',
+        verbose_name='Кем подтверждено',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    is_confirmed = models.BooleanField(verbose_name='Подтверждено', default=False)
+    confirmation_date = models.DateField(verbose_name='Дата подтверждения', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Запрос на открытие ТТ/хранилища'
+        verbose_name_plural = 'Запросы на открытие ТТ/хранилища'
+
+    def __str__(self):
+        return f'Запрос №{self.id} {self.storage} {self.main_office_filial}'
