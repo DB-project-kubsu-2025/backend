@@ -3,7 +3,7 @@
 
 ## Системные требования
 1. Docker
-2. Python
+2. Python (для разработки)
 
 ## Документация по развертыванию
 
@@ -11,18 +11,19 @@
 2. В папку `./frontend` необходимо стянуть репозиторий frontend-части проекта (https://github.com/DB-project-kubsu-2025/frontend)
     _с некоторой периодичностью frontend надо обновлять (git pull origin main или git fetch origin main:main)_
 3. В .env заполнить переменные `ALLOWED_HOSTS` и `SECRET_KEY`. В первую переменную необходимо написать IP-адрес своего устройства, во вторую - любой текст
-4. Запустить docker desktop (он должен быть запущен)
-5. Сгенерировать ssl-сертификаты следующей командой:
+4. Запустить docker desktop
+5. В корне репозитория создать папку `ssl` и `frontend`
+6. Сгенерировать ssl-сертификаты следующей командой:
    ```bash
    mkcert -cert-file ssl/crm.crt -key-file ssl/crm.key crm.com
    ```
-6. На windows отредактировать (с правами админа) файл с хостами (`C:\Windows\System32\drivers\etc\hosts`), добавить туда следующие строки:
+7. На windows отредактировать (с правами админа) файл с хостами (`C:\Windows\System32\drivers\etc\hosts`), добавить туда следующие строки:
    ```bash
    <ip-адрес> crm.com
    <ip-адрес> admin.crm.com
    ```
    и не забыть сохранить
-7. В том же терминале запустить команду:
+8. В том же терминале запустить команду:
     ```bash
     docker compose up
     ```
@@ -33,3 +34,5 @@
 1. Settings -> Project -> Python Interpreter -> Add Interpreter -> On docker compose
 2. Configuration files: ./docker-compose.yaml, service: app
 3. Все последующие настройки не меняем
+4. Ждем, пока подгрузятся все зависимости и скелетоны (в нижнем меню должен быть ползунок)
+5. Profit
