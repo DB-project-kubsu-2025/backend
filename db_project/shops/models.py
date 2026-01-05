@@ -348,7 +348,7 @@ class InventoryMovement(AutoDateMixin):
     )
     sales_receipt = models.ForeignKey(
         'SaleReceipt',
-        verbose_name='',
+        verbose_name='Чек товара',
         on_delete=models.PROTECT,
         null=True,
         blank=True,
