@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
 from employees.models import (
     Passport,
@@ -48,12 +50,81 @@ class SalaryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Employee)
-class EmployeeAdmin(admin.ModelAdmin):
+class EmployeeAdmin(UserAdmin):
     """Админ для модели Employee"""
-
+    model = Employee
+    add_form = UserCreationForm
+    form = UserChangeForm
     list_display = ['work_phone', 'last_name', 'first_name', 'second_name', 'username', 'date_joined']
-    raw_id_fields = ['passport']
-    readonly_fields = ['password']
+
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (
+            'Personal info',
+            {
+                'fields': (
+                    'last_name',
+                    'first_name',
+                    'second_name',
+                    'gender',
+                    'birth_date',
+                    'phone',
+                    'work_phone',
+                    'passport',
+                    'snils',
+                    'inn',
+                    'workplace',
+                ),
+            },
+        ),
+        (
+            'Permissions',
+            {
+                'fields': (
+                    'is_active',
+                    'is_staff',
+                    'is_superuser',
+                    'groups',
+                    'user_permissions',
+                ),
+            },
+        ),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+    )
+    add_fieldsets = (
+        (None, {'fields': ('username', 'password1', 'password2')}),
+        (
+            'Personal info',
+            {
+                'fields': (
+                    'last_name',
+                    'first_name',
+                    'second_name',
+                    'gender',
+                    'birth_date',
+                    'phone',
+                    'work_phone',
+                    'passport',
+                    'snils',
+                    'inn',
+                    'workplace',
+                ),
+            },
+        ),
+        (
+            'Permissions',
+            {
+                'fields': (
+                    'is_active',
+                    'is_staff',
+                    'is_superuser',
+                    'groups',
+                    'user_permissions',
+                ),
+            },
+        ),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+    )
 
 
 @admin.register(LeaveRequestType)
