@@ -743,6 +743,13 @@ class SaleReceipt(AutoDateMixin):
     total_payable = models.PositiveSmallIntegerField(verbose_name='Цена к оплате')
     paid_amount = models.PositiveSmallIntegerField(verbose_name='Оплаченная сумма', null=True, blank=True)
     paid_at = models.DateTimeField(verbose_name='Время оплаты', null=True, blank=True)
+    inventory_lots = models.ManyToManyField(
+        'InventoryLot',
+        through='SalesReceiptLine',
+        verbose_name='Партии товара',
+        related_name='sale_receipts',
+        blank=True,
+    )
 
     class Meta:
         verbose_name = 'Чек продажи'
@@ -754,4 +761,46 @@ class SaleReceipt(AutoDateMixin):
 
 class SalesReceiptLine(AutoDateMixin):
     """Связка чеки - товары"""
-    # todo:
+
+    sale_receipt = models.ForeignKey(
+        'SaleReceipt',
+        verbose_name='Чек продажи',
+        on_delete=models.PROTECT,
+    )
+    inventory_lot = models.ForeignKey(
+        'InventoryLot',
+        verbose_name='Партия товара',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    coupon = models.ForeignKey(
+        'Coupon',
+        verbose_name='Купон',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    price_list_type = models.ForeignKey(
+        'PriceListType',
+        verbose_name='Тип прайс-листа',
+        on_delete=models.PROTECT,
+    )
+    price_list_base = models.ForeignKey(
+        'PriceListBase',
+        verbose_name='Основание формирования прайс-листа',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    quantity = models.PositiveSmallIntegerField(verbose_name='Кол-во')
+    unit_price = models.PositiveSmallIntegerField(verbose_name='Цена единицы')
+    line_discount = models.PositiveSmallIntegerField(verbose_name='Суммарная скидка')
+    line_total = models.PositiveSmallIntegerField(verbose_name='Итоговая сумма')
+
+    class Meta:
+        verbose_name = 'Связка чеки - товары'
+        verbose_name_plural = 'Связки чеки - товары'
+
+    def __str__(self):
+        return f'Связка №{self.id} {self.sale_receipt} {self.inventory_lot}'
