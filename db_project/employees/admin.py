@@ -10,7 +10,6 @@ from employees.models import (
     LeaveRequest,
     LeaveRequestAttachment,
     AnnualLeaveBalance,
-    TimeWorkType,
     TimeEntry,
     TimeSessionCloseReason,
     TimeSession,
@@ -97,20 +96,13 @@ class GlobalTimePolicyAdmin(admin.ModelAdmin):
     list_display = ['required_minutes', 'cut_off_minute', 'prompt_wait_minutes', 'effective_from', 'effective_to']
 
 
-@admin.register(TimeWorkType)
-class TimeWorkTypeAdmin(admin.ModelAdmin):
-    """Админ для модели TimeWorkType"""
-
-    list_display = ['id', 'name', 'is_active']
-
-
 @admin.register(TimeEntry)
 class TimeEntryAdmin(admin.ModelAdmin):
     """Админ для модели TimeEntry"""
 
-    list_display = ['employee', 'work_type', 'date', 'minutes', 'comment']
-    list_filter = ['employee', 'work_type']
-    raw_id_fields = ['employee', 'work_type']
+    list_display = ['employee', 'date', 'minutes', 'comment']
+    list_filter = ['employee']
+    raw_id_fields = ['employee']
 
 
 @admin.register(TimeSessionCloseReason)

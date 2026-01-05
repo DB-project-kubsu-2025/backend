@@ -268,21 +268,6 @@ class GlobalTimePolicy(AutoDateMixin):
         return f'Единая политика рабочего времени с {self.effective_from} до {self.effective_to}'
 
 
-class TimeWorkType(AutoDateMixin):
-    """Тип работ для списания времени"""
-
-    name = models.CharField(verbose_name='Название', max_length=80)
-    is_active = models.BooleanField(verbose_name='Активность', default=True)
-
-    class Meta:
-        verbose_name = 'Тип работ для списания времени'
-        verbose_name_plural = 'Типы работ для списания времени'
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-
 class TimeEntry(AutoDateMixin):
     """Списание времени"""
 
@@ -291,11 +276,6 @@ class TimeEntry(AutoDateMixin):
         verbose_name='Работник',
         on_delete=models.PROTECT,
         related_name='time_entries',
-    )
-    work_type = models.ForeignKey(
-        'TimeWorkType',
-        verbose_name='Тип работ',
-        on_delete=models.PROTECT,
     )
     date = models.DateField(verbose_name='Дата', db_index=True)
     minutes = models.PositiveSmallIntegerField(verbose_name='Минуты')

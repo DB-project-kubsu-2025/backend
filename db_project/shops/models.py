@@ -426,7 +426,7 @@ class PriceListBase(AutoDateMixin):
     """Основание формирования прайс-листа"""
 
     name = models.CharField(verbose_name='Название', max_length=64, unique=True)
-    is_active = models.BooleanField(verbose_name='Активно', default=True)
+    is_active = models.BooleanField(verbose_name='Активно', default=False)
 
     class Meta:
         verbose_name = 'Тип прайс-листа'
@@ -513,7 +513,7 @@ class PricingConstraint(AutoDateMixin):
         null=True,
         blank=True,
     )
-    is_active = models.BooleanField(verbose_name='Активно', default=True)
+    is_active = models.BooleanField(verbose_name='Активно', default=False)
     scope = models.CharField(
         verbose_name='Область действия',
         max_length=20,
@@ -625,3 +625,133 @@ class StorePrice(AutoDateMixin):
 
     def __str__(self):
         return f'Цена №{self.id} для продукта {self.product}'
+
+
+class CouponDiscountType(AutoDateMixin):
+    """Тип скидки в купоне"""
+
+    name = models.CharField(verbose_name='Название', max_length=64, unique=True)
+
+    class Meta:
+        verbose_name = 'Тип скидки в купоне'
+        verbose_name_plural = 'Типы скидок в купонах'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Coupon(AutoDateMixin):
+    """Купон"""
+
+    storage = models.ForeignKey(
+        'Storage',
+        verbose_name='Хранилище',
+        on_delete=models.PROTECT,
+    )
+    product = models.ForeignKey(
+        'Product',
+        verbose_name='Продукт',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    discount_type = models.ForeignKey(
+        'CouponDiscountType',
+        verbose_name='Тип скидки',
+        on_delete=models.PROTECT,
+    )
+    value = models.PositiveSmallIntegerField(verbose_name='Размер скидки')
+    valid_from = models.DateField(verbose_name='Дата начала действия')
+    valid_to = models.DateField(verbose_name='Дата окончания действия')
+    min_quantity = models.PositiveSmallIntegerField(
+        verbose_name='Мин. кол-во в чеке для применения скидки',
+        null=True,
+        blank=True,
+    )
+    is_active = models.BooleanField(verbose_name='Активна', default=False)
+
+    class Meta:
+        verbose_name = 'Купон'
+        verbose_name_plural = 'Купоны'
+
+    def __str__(self):
+        return f'Купон №{self.id} в хранилище {self.storage} c {self.valid_from} по {self.valid_to}'
+
+
+class PaymentMethod(AutoDateMixin):
+    """Тип оплаты"""
+
+    name = models.CharField(verbose_name='Название', max_length=64, unique=True)
+
+    class Meta:
+        verbose_name = 'Тип оплаты'
+        verbose_name_plural = 'Типы оплаты'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class SaleReceipt(AutoDateMixin):
+    """Чек продажи"""
+
+    DRAFT = 'draft'
+    PAID = 'paid'
+    CANCELED = 'canceled'
+    STATUSES = {
+        DRAFT: 'Создан',
+        PAID: 'Оплачен',
+        CANCELED: 'Отменен',
+    }
+
+    storage = models.ForeignKey(
+        'Storage',
+        verbose_name='Хранилище',
+        on_delete=models.PROTECT,
+        related_name='receipts',
+    )
+    cashier = models.ForeignKey(
+        'employees.Employee',
+        verbose_name='Кассир',
+        on_delete=models.PROTECT,
+        related_name='cashier_receipts',
+    )
+    time_session = models.ForeignKey(
+        'employees.TimeSession',
+        verbose_name='Рабочая сессия',
+        on_delete=models.PROTECT,
+        related_name='time_session_receipts',
+    )
+    payment_method = models.ForeignKey(
+        'PaymentMethod',
+        verbose_name='Тип оплаты',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    status = models.CharField(
+        verbose_name='Статус',
+        max_length=20,
+        choices=STATUSES,
+        default=DRAFT,
+    )
+    opened_at = models.DateTimeField(verbose_name='Время создания')
+    closed_at = models.DateTimeField(verbose_name='Время закрытия', null=True, blank=True)
+    total_gross = models.PositiveSmallIntegerField(verbose_name='Полная цена')
+    total_discount = models.PositiveSmallIntegerField(verbose_name='Размер скидки')
+    total_payable = models.PositiveSmallIntegerField(verbose_name='Цена к оплате')
+    paid_amount = models.PositiveSmallIntegerField(verbose_name='Оплаченная сумма', null=True, blank=True)
+    paid_at = models.DateTimeField(verbose_name='Время оплаты', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Чек продажи'
+        verbose_name_plural = 'Чеки продажи'
+
+    def __str__(self):
+        return f'Чек №{self.id} в ТТ {self.storage} ({self.cashier}, {self.time_session})'
+
+
+class SalesReceiptLine(AutoDateMixin):
+    """Связка чеки - товары"""
+    # todo:
