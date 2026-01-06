@@ -15,7 +15,10 @@ from .response_serializers import (
     StorageProfileResponseSerializer,
 )
 from .request_serializers import (
+    StorageRequestSerializer,
+    ProductMediaRequestSerializer,
     SpaceRequestSerializer,
+    InventoryLotRequestSerializer,
 )
 
 __all__ = [
@@ -33,5 +36,8 @@ __all__ = [
     'WriteoffReasonResponseSerializer',
     'ProductResponseSerializer',
     'StorageProfileResponseSerializer',
+    'StorageRequestSerializer',
+    'ProductMediaRequestSerializer',
     'SpaceRequestSerializer',
+    'InventoryLotRequestSerializer',
 ]

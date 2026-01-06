@@ -26,6 +26,8 @@ class APISchemaTags:
     REFERENCE_BOOKS = 'Справочники'
     STORAGES = 'Хранилища'
     SPACES = 'Места хранения'
+    INVENTORY = 'Поставки'
+    PRODUCTS = 'Продукты'
 
 
 class DefaultAPIResponses:
