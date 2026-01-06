@@ -107,7 +107,6 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
                 'gender': 'male',
                 'phone': 'phone',
                 'birth_date': '2020-10-10',
-                'passport': '1',
                 'snils': '11111111111',
                 'inn': '111111111111',
                 'work_phone': '79180000000',

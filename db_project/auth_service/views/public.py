@@ -56,7 +56,7 @@ class HealthCheck(APIView):
     ),
 )
 class RegisterEmployee(APIView):
-    """Регистрация спортсмена"""
+    """Регистрация работника"""
 
     permission_classes: list = [HasNoRefreshToken]
     authentication_classes: list = []
