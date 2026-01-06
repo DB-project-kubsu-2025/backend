@@ -11,6 +11,8 @@ from .reference_books import (
     GetStopListReason,
     GetStockTakeType,
     GetWriteoffReason,
+    GetProduct,
+    GetStorageProfile,
 )
 
 __all__ = [
@@ -26,4 +28,6 @@ __all__ = [
     'GetStopListReason',
     'GetStockTakeType',
     'GetWriteoffReason',
+    'GetProduct',
+    'GetStorageProfile',
 ]

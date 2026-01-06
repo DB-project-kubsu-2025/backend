@@ -17,7 +17,9 @@ from shops.models import (
     PriceListType,
     MovementType,
     SpaceType,
-    StorageType,
+    StorageType, 
+    Product,
+    StorageProfile,
 )
 from shops.serializers import (
     ProductUnitResponseSerializer,
@@ -31,7 +33,9 @@ from shops.serializers import (
     PriceListTypeResponseSerializer,
     MovementTypeResponseSerializer,
     SpaceTypeResponseSerializer,
-    StorageTypeResponseSerializer,
+    StorageTypeResponseSerializer, 
+    ProductResponseSerializer,
+    StorageProfileResponseSerializer,
 )
 
 
@@ -115,9 +119,87 @@ class GetProductCategory(ReadOnlyModelViewSet):
 
 @extend_schema_view(
     list=extend_schema(
+        summary="Получить список продуктов",
+        description='Возвращает полный список всех продуктов из справочника',
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: ProductResponseSerializer(many=True),
+        },
+    ),
+    retrieve=extend_schema(
+        summary="Получить продукт по ID",
+        description="Возвращает детальную информацию о конкретном продукте",
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID продукта',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: ProductResponseSerializer,
+        },
+    ),
+)
+class GetProduct(ReadOnlyModelViewSet):
+    """Получить данные из справочника продуктов"""
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    queryset = Product.objects.all()
+    serializer_class = ProductResponseSerializer
+    lookup_field = 'id'
+
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="Получить список условий хранения",
+        description='Возвращает полный список всех условий хранения продуктов',
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: StorageProfileResponseSerializer(many=True),
+        },
+    ),
+    retrieve=extend_schema(
+        summary="Получить условие хранения по ID",
+        description="Возвращает детальную информацию о конкретном условии хранения продукта",
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID условия хранения',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: StorageProfileResponseSerializer,
+        },
+    ),
+)
+class GetStorageProfile(ReadOnlyModelViewSet):
+    """Получить данные из справочника условий хранения продуктов"""
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    queryset = StorageProfile.objects.all()
+    serializer_class = StorageProfileResponseSerializer
+    lookup_field = 'id'
+
+
+@extend_schema_view(
+    list=extend_schema(
         summary="Получить список типов хранилищ",
         description='Возвращает полный список всех типов хранилищ из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: StorageTypeResponseSerializer(many=True),
@@ -126,7 +208,7 @@ class GetProductCategory(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить тип хранилища по ID",
         description="Возвращает детальную информацию о конкретном типе хранилища",
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -156,7 +238,7 @@ class GetStorageType(ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Получить список типов мест хранения",
         description='Возвращает полный список всех типов мест хранения из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: SpaceTypeResponseSerializer(many=True),
@@ -165,7 +247,7 @@ class GetStorageType(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить тип места хранения по ID",
         description="Возвращает детальную информацию о конкретном типе места хранения",
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -195,7 +277,7 @@ class GetSpaceType(ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Получить список типов перемещений",
         description='Возвращает полный список всех типов перемещений партий из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: MovementTypeResponseSerializer(many=True),
@@ -204,7 +286,7 @@ class GetSpaceType(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить тип перемещения по ID",
         description="Возвращает детальную информацию о конкретном типе перемещения партии",
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -234,7 +316,7 @@ class GetMovementType(ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Получить список типов прайс-листов",
         description='Возвращает полный список всех типов прайс-листов из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: PriceListTypeResponseSerializer(many=True),
@@ -243,7 +325,7 @@ class GetMovementType(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить тип прайс-листа по ID",
         description="Возвращает детальную информацию о конкретном типе прайс-листа",
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -273,7 +355,7 @@ class GetPriceListType(ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Получить список оснований прайс-листов",
         description='Возвращает полный список всех оснований формирования прайс-листов из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: PriceListBaseResponseSerializer(many=True),
@@ -282,7 +364,7 @@ class GetPriceListType(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить основание прайс-листа по ID",
         description="Возвращает детальную информацию о конкретном основании формирования прайс-листа",
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -312,7 +394,7 @@ class GetPriceListBase(ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Получить список типов скидок в купонах",
         description='Возвращает полный список всех типов скидок в купонах из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: CouponDiscountTypeResponseSerializer(many=True),
@@ -321,7 +403,7 @@ class GetPriceListBase(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить тип скидки в купоне по ID",
         description="Возвращает детальную информацию о конкретном типе скидки в купоне",
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -351,7 +433,7 @@ class GetCouponDiscountType(ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Получить список типов оплаты",
         description='Возвращает полный список всех типов оплаты из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: PaymentMethodResponseSerializer(many=True),
@@ -360,7 +442,7 @@ class GetCouponDiscountType(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить тип оплаты по ID",
         description="Возвращает детальную информацию о конкретном типе оплаты",
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -390,7 +472,7 @@ class GetPaymentMethod(ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Получить список причин стоп-листа",
         description='Возвращает полный список всех причин переноса в стоп-лист из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: StopListReasonResponseSerializer(many=True),
@@ -399,7 +481,7 @@ class GetPaymentMethod(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить причину стоп-листа по ID",
         description="Возвращает детальную информацию о конкретной причине переноса в стоп-лист",
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -429,7 +511,7 @@ class GetStopListReason(ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Получить список типов инвентаризации",
         description='Возвращает полный список всех типов инвентаризации из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: StockTakeTypeResponseSerializer(many=True),
@@ -438,7 +520,7 @@ class GetStopListReason(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить тип инвентаризации по ID",
         description="Возвращает детальную информацию о конкретном типе инвентаризации",
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -468,7 +550,7 @@ class GetStockTakeType(ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Получить список причин списания",
         description='Возвращает полный список всех причин списания из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: WriteoffReasonResponseSerializer(many=True),
@@ -477,7 +559,7 @@ class GetStockTakeType(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить причину списания по ID",
         description="Возвращает детальную информацию о конкретной причине списания",
-        tags=[APISchemaTags.REFERENCE_BOOKS],
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',

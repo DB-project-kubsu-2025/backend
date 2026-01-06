@@ -14,11 +14,15 @@ from shops.views import (
     GetStopListReason,
     GetStockTakeType,
     GetWriteoffReason,
+    GetProduct,
+    GetStorageProfile,
 )
 
 shops_router = SimpleRouter()
 shops_router.register('products/units', GetProductUnit)
 shops_router.register('products/categories', GetProductCategory)
+shops_router.register('products/', GetProduct)
+shops_router.register('storages/profiles', GetStorageProfile)
 shops_router.register('storages/types', GetStorageType)
 shops_router.register('storages/spaces/types', GetSpaceType)
 shops_router.register('movements/types', GetMovementType)
