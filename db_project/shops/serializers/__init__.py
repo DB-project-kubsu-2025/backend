@@ -12,6 +12,7 @@ from .response_serializers import (
     StockTakeTypeResponseSerializer,
     WriteoffReasonResponseSerializer,
     ProductResponseSerializer,
+    StorageProfileResponseSerializer,
 )
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     'StockTakeTypeResponseSerializer',
     'WriteoffReasonResponseSerializer',
     'ProductResponseSerializer',
+    'StorageProfileResponseSerializer',
 ]

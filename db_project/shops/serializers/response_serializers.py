@@ -14,7 +14,7 @@ from shops.models import (
     StopListReason,
     StockTakeType,
     WriteoffReason,
-    Product,
+    Product, StorageProfile,
 )
 
 
@@ -130,6 +130,48 @@ class ProductResponseSerializer(serializers.ModelSerializer):
             'producer_code',
             'country_name',
             'additional_info',
+        ]
+
+
+@extend_schema_serializer(
+    many=True,
+    examples=[
+        OpenApiExample(
+            'Пример ответа от сервера',
+            description='Базовый ответ',
+            value=[
+                {
+                    'id': 1,
+                    'product': 1,
+                    'weight': 1,
+                    'temp_min_c': 2,
+                    'temp_max_c': 6,
+                    'light_sensitive': True,
+                },
+                {
+                    'id': 2,
+                    'product': 2,
+                    'weight': 5,
+                    'temp_min_c': -5,
+                    'temp_max_c': -2,
+                    'light_sensitive': False,
+                },
+            ],
+        ),
+    ],
+)
+class StorageProfileResponseSerializer(serializers.ModelSerializer):
+    """Сериализатор ответа для StorageProfile"""
+
+    class Meta:
+        model = StorageProfile
+        fields = [
+            'id',
+            'product',
+            'weight',
+            'temp_min_c',
+            'temp_max_c',
+            'light_sensitive',
         ]
 
 
