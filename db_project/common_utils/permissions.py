@@ -23,3 +23,24 @@ class HasStorageGroupPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         """Проверить наличие разрешения"""
         return request.user.groups.filter(name='storage_group').exists()
+
+
+class HasCommodityExpertGroupPermission(permissions.BasePermission):
+    """Пользователь принадлежит группе commodity_expert_group"""
+
+    def has_permission(self, request, view):
+        return request.user.groups.filter(name='commodity_expert_group').exists()
+
+
+class HasStorekeeperGroupPermission(permissions.BasePermission):
+    """Пользователь принадлежит группе storekeeper_group"""
+
+    def has_permission(self, request, view):
+        return request.user.groups.filter(name='storekeeper_group').exists()
+
+
+class HasSellerGroupPermission(permissions.BasePermission):
+    """Пользователь принадлежит группе seller_group"""
+
+    def has_permission(self, request, view):
+        return request.user.groups.filter(name='seller_group').exists()
