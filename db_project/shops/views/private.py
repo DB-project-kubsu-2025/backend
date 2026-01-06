@@ -4,9 +4,118 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from common_utils.constants import APISchemaTags, DefaultAPIResponses
-from common_utils.permissions import HasStorekeeperGroupPermission, HasCommodityExpertGroupPermission
-from shops.models import Space, InventoryLot
-from shops.serializers import SpaceRequestSerializer, InventoryLotRequestSerializer
+from common_utils.permissions import (
+    HasStorekeeperGroupPermission,
+    HasCommodityExpertGroupPermission,
+    HasMainOfficeGroupPermission,
+)
+from shops.models import Space, InventoryLot, Storage
+from shops.serializers import SpaceRequestSerializer, InventoryLotRequestSerializer, StorageRequestSerializer
+
+
+@extend_schema_view(
+    create=extend_schema(
+        summary="Создать хранилище",
+        description='Создание нового хранилища',
+        tags=[APISchemaTags.STORAGES],
+        request=StorageRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_201_CREATED: StorageRequestSerializer,
+        },
+    ),
+    list=extend_schema(
+        summary="Получить список хранилищ",
+        description='Возвращает полный список всех хранилищ',
+        tags=[APISchemaTags.STORAGES],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: StorageRequestSerializer(many=True),
+        },
+    ),
+    retrieve=extend_schema(
+        summary="Получить хранилище по ID",
+        description="Возвращает детальную информацию о конкретном хранилище",
+        tags=[APISchemaTags.STORAGES],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID хранилища',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: StorageRequestSerializer,
+        },
+    ),
+    update=extend_schema(
+        summary="Обновить хранилище",
+        description='Полное обновление информации о хранилище',
+        tags=[APISchemaTags.STORAGES],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID хранилища',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        request=StorageRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: StorageRequestSerializer,
+        },
+    ),
+    partial_update=extend_schema(
+        summary="Частично обновить хранилище",
+        description='Частичное обновление информации о хранилище',
+        tags=[APISchemaTags.STORAGES],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID хранилища',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        request=StorageRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: StorageRequestSerializer,
+        },
+    ),
+    destroy=extend_schema(
+        summary="Удалить хранилище",
+        description='Удаление хранилища из системы',
+        tags=[APISchemaTags.STORAGES],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID хранилища',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_204_NO_CONTENT: None,
+        },
+    ),
+)
+class StorageViewSet(viewsets.ModelViewSet):
+    """CRUD операции для хранилищ"""
+
+    permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
+    authentication_classes = [JWTAuthentication]
+    queryset = Storage.objects.all()
+    serializer_class = StorageRequestSerializer
+    lookup_field = 'id'
 
 
 @extend_schema_view(

@@ -1,6 +1,42 @@
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
-from shops.models import Space, InventoryLot
+from shops.models import Space, InventoryLot, Storage
+
+
+@extend_schema_serializer(
+    examples=[
+        OpenApiExample(
+            'Пример запроса на создание хранилища',
+            description='Базовый запрос',
+            value={
+                'director': 1,
+                'main_office_filial': 2,
+                'storage_type': 3,
+                'cadastral_number': '77:01:0001001:1001',
+                'approved_by_main_company': True,
+                'opened': True,
+                'area': 500,
+                'utilization_percent': 75,
+            },
+            request_only=True,
+        ),
+    ],
+)
+class StorageRequestSerializer(serializers.ModelSerializer):
+    """Сериализатор запроса для создания/обновления Storage"""
+
+    class Meta:
+        model = Storage
+        fields = [
+            'director',
+            'main_office_filial',
+            'storage_type',
+            'cadastral_number',
+            'approved_by_main_company',
+            'opened',
+            'area',
+            'utilization_percent',
+        ]
 
 
 @extend_schema_serializer(
