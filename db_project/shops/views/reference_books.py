@@ -17,7 +17,7 @@ from shops.models import (
     PriceListType,
     MovementType,
     SpaceType,
-    StorageType,
+    StorageType, Product,
 )
 from shops.serializers import (
     ProductUnitResponseSerializer,
@@ -31,7 +31,7 @@ from shops.serializers import (
     PriceListTypeResponseSerializer,
     MovementTypeResponseSerializer,
     SpaceTypeResponseSerializer,
-    StorageTypeResponseSerializer,
+    StorageTypeResponseSerializer, ProductResponseSerializer,
 )
 
 
@@ -110,6 +110,45 @@ class GetProductCategory(ReadOnlyModelViewSet):
     authentication_classes = [JWTAuthentication]
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategoryResponseSerializer
+    lookup_field = 'id'
+
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="Получить список продуктов",
+        description='Возвращает полный список всех продуктов из справочника',
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: ProductResponseSerializer(many=True),
+        },
+    ),
+    retrieve=extend_schema(
+        summary="Получить продукт по ID",
+        description="Возвращает детальную информацию о конкретном продукте",
+        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID продукта',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: ProductResponseSerializer,
+        },
+    ),
+)
+class GetProduct(ReadOnlyModelViewSet):
+    """Получить данные из справочника продуктов"""
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    queryset = Product.objects.all()
+    serializer_class = ProductResponseSerializer
     lookup_field = 'id'
 
 

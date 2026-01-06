@@ -3,8 +3,18 @@ from rest_framework import serializers
 
 from shops.models import (
     ProductUnit,
-    ProductCategory, StorageType, SpaceType, MovementType, PriceListType, PriceListBase, CouponDiscountType,
-    PaymentMethod, StopListReason, StockTakeType, WriteoffReason,
+    ProductCategory,
+    StorageType,
+    SpaceType,
+    MovementType,
+    PriceListType,
+    PriceListBase,
+    CouponDiscountType,
+    PaymentMethod,
+    StopListReason,
+    StockTakeType,
+    WriteoffReason,
+    Product,
 )
 
 
@@ -65,6 +75,61 @@ class ProductCategoryResponseSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
+        ]
+
+
+
+@extend_schema_serializer(
+    many=True,
+    examples=[
+        OpenApiExample(
+            'Пример ответа от сервера',
+            description='Базовый ответ',
+            value=[
+                {
+                    'id': 1,
+                    'unit': 1,
+                    'category': 2,
+                    'name': 'Молоко 2.5%',
+                    'description': 'Пастеризованное молоко',
+                    'expiration_days': 5,
+                    'producer_name': 'Молочный комбинат',
+                    'producer_code': '550e8400-e29b-41d4-a716-446655440000',
+                    'country_name': 'Россия',
+                    'additional_info': 'В пластиковой бутылке',
+                },
+                {
+                    'id': 2,
+                    'unit': 2,
+                    'category': 1,
+                    'name': 'Хлеб пшеничный',
+                    'description': 'Свежий хлеб',
+                    'expiration_days': 3,
+                    'producer_name': 'Хлебозавод №1',
+                    'producer_code': '123e4567-e89b-12d3-a456-426614174000',
+                    'country_name': 'Россия',
+                    'additional_info': 'Нарезной',
+                },
+            ],
+        ),
+    ],
+)
+class ProductResponseSerializer(serializers.ModelSerializer):
+    """Сериализатор ответа для Product"""
+
+    class Meta:
+        model = Product
+        fields = [
+            'id',
+            'unit',
+            'category',
+            'name',
+            'description',
+            'expiration_days',
+            'producer_name',
+            'producer_code',
+            'country_name',
+            'additional_info',
         ]
 
 

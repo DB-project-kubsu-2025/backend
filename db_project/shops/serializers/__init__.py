@@ -11,6 +11,7 @@ from .response_serializers import (
     StopListReasonResponseSerializer,
     StockTakeTypeResponseSerializer,
     WriteoffReasonResponseSerializer,
+    ProductResponseSerializer,
 )
 
 __all__ = [
@@ -26,4 +27,5 @@ __all__ = [
     'StopListReasonResponseSerializer',
     'StockTakeTypeResponseSerializer',
     'WriteoffReasonResponseSerializer',
+    'ProductResponseSerializer',
 ]
