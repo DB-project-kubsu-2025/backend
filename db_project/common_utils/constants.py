@@ -27,6 +27,7 @@ class APISchemaTags:
     STORAGES = 'Хранилища'
     SPACES = 'Места хранения'
     INVENTORY = 'Поставки'
+    PRODUCTS = 'Продукты'
 
 
 class DefaultAPIResponses:

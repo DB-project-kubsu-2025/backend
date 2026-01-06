@@ -1,6 +1,30 @@
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
-from shops.models import Space, InventoryLot, Storage
+from shops.models import Space, InventoryLot, Storage, ProductMedia
+
+
+@extend_schema_serializer(
+    examples=[
+        OpenApiExample(
+            'Пример запроса на создание медиа для товара',
+            description='Базовый запрос',
+            value={
+                'product': 1,
+                'image': 'binary multipart/form-data',
+            },
+            request_only=True,
+        ),
+    ],
+)
+class ProductMediaRequestSerializer(serializers.ModelSerializer):
+    """Сериализатор запроса для создания/обновления ProductMedia"""
+
+    class Meta:
+        model = ProductMedia
+        fields = [
+            'product',
+            'image',
+        ]
 
 
 @extend_schema_serializer(

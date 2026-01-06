@@ -18,6 +18,7 @@ from .private import (
     StorageViewSet,
     SpaceViewSet,
     InventoryLotViewSet,
+    ProductMediaViewSet,
 )
 
 __all__ = [
@@ -38,4 +39,5 @@ __all__ = [
     'StorageViewSet',
     'SpaceViewSet',
     'InventoryLotViewSet',
+    'ProductMediaViewSet',
 ]

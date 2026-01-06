@@ -19,11 +19,13 @@ from shops.views import (
     SpaceViewSet,
     InventoryLotViewSet,
     StorageViewSet,
+    ProductMediaViewSet,
 )
 
 shops_router = SimpleRouter()
 shops_router.register('products/units', GetProductUnit)
 shops_router.register('products/categories', GetProductCategory)
+shops_router.register('products/media', ProductMediaViewSet)
 shops_router.register('products', GetProduct)
 shops_router.register('storages/profiles', GetStorageProfile)
 shops_router.register('storages/types', GetStorageType)

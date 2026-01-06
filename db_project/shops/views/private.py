@@ -9,8 +9,9 @@ from common_utils.permissions import (
     HasCommodityExpertGroupPermission,
     HasMainOfficeGroupPermission,
 )
-from shops.models import Space, InventoryLot, Storage
-from shops.serializers import SpaceRequestSerializer, InventoryLotRequestSerializer, StorageRequestSerializer
+from shops.models import Space, InventoryLot, Storage, ProductMedia
+from shops.serializers import SpaceRequestSerializer, InventoryLotRequestSerializer, StorageRequestSerializer, \
+    ProductMediaRequestSerializer
 
 
 @extend_schema_view(
@@ -116,6 +117,127 @@ class StorageViewSet(viewsets.ModelViewSet):
     queryset = Storage.objects.all()
     serializer_class = StorageRequestSerializer
     lookup_field = 'id'
+
+
+@extend_schema_view(
+    create=extend_schema(
+        summary="Создать медиа для товара",
+        description='Создание нового медиа для карточки товара',
+        tags=[APISchemaTags.PRODUCTS],
+        request=ProductMediaRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_201_CREATED: ProductMediaRequestSerializer,
+        },
+    ),
+    list=extend_schema(
+        summary="Получить список медиа товаров",
+        description='Возвращает список медиа для карточек товаров с фильтрацией по product_id',
+        tags=[APISchemaTags.PRODUCTS],
+        parameters=[
+            OpenApiParameter(
+                name='product_id',
+                description='Фильтр по ID продукта',
+                required=False,
+                type=int,
+                location=OpenApiParameter.QUERY
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: ProductMediaRequestSerializer(many=True),
+        },
+    ),
+    retrieve=extend_schema(
+        summary="Получить медиа товара по ID",
+        description="Возвращает детальную информацию о конкретном медиа товара",
+        tags=[APISchemaTags.PRODUCTS],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID медиа товара',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: ProductMediaRequestSerializer,
+        },
+    ),
+    update=extend_schema(
+        summary="Обновить медиа товара",
+        description='Полное обновление информации о медиа товара',
+        tags=[APISchemaTags.PRODUCTS],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID медиа товара',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        request=ProductMediaRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: ProductMediaRequestSerializer,
+        },
+    ),
+    partial_update=extend_schema(
+        summary="Частично обновить медиа товара",
+        description='Частичное обновление информации о медиа товара',
+        tags=[APISchemaTags.PRODUCTS],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID медиа товара',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        request=ProductMediaRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: ProductMediaRequestSerializer,
+        },
+    ),
+    destroy=extend_schema(
+        summary="Удалить медиа товара",
+        description='Удаление медиа товара из системы',
+        tags=[APISchemaTags.PRODUCTS],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID медиа товара',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_204_NO_CONTENT: None,
+        },
+    ),
+)
+class ProductMediaViewSet(viewsets.ModelViewSet):
+    """CRUD операции для медиа товаров"""
+
+    permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
+    authentication_classes = [JWTAuthentication]
+    queryset = ProductMedia.objects.all()
+    serializer_class = ProductMediaRequestSerializer
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        product_id = self.request.query_params.get('product_id')
+        if product_id:
+            queryset = queryset.filter(product_id=product_id)
+        return queryset
 
 
 @extend_schema_view(
