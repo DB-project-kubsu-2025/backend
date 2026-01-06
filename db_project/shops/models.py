@@ -211,6 +211,8 @@ class Space(AutoDateMixin):
         verbose_name='Родительское место хранения',
         help_text='Для иерархии, например, при SALES_AREA',
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
     )
     temp_min_c = models.SmallIntegerField(verbose_name='Мин. температура (Цельсия)')
     temp_max_c = models.SmallIntegerField(verbose_name='Макс. температура (Цельсия)')
