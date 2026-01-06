@@ -16,6 +16,7 @@ from .response_serializers import (
 )
 from .request_serializers import (
     SpaceRequestSerializer,
+    InventoryLotRequestSerializer,
 )
 
 __all__ = [
@@ -34,4 +35,5 @@ __all__ = [
     'ProductResponseSerializer',
     'StorageProfileResponseSerializer',
     'SpaceRequestSerializer',
+    'InventoryLotRequestSerializer',
 ]

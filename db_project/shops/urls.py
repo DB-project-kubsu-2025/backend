@@ -17,6 +17,7 @@ from shops.views import (
     GetProduct,
     GetStorageProfile,
     SpaceViewSet,
+    InventoryLotViewSet,
 )
 
 shops_router = SimpleRouter()
@@ -27,6 +28,7 @@ shops_router.register('storages/profiles', GetStorageProfile)
 shops_router.register('storages/types', GetStorageType)
 shops_router.register('storages/spaces/types', GetSpaceType)
 shops_router.register('storages/spaces', SpaceViewSet)
+shops_router.register('storages/inventory_lots', InventoryLotViewSet)
 shops_router.register('movements/types', GetMovementType)
 shops_router.register('price-lists/types', GetPriceListType)
 shops_router.register('price-lists/bases', GetPriceListBase)

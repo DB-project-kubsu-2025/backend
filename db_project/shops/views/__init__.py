@@ -16,6 +16,7 @@ from .reference_books import (
 )
 from .private import (
     SpaceViewSet,
+    InventoryLotViewSet,
 )
 
 __all__ = [
@@ -34,4 +35,5 @@ __all__ = [
     'GetProduct',
     'GetStorageProfile',
     'SpaceViewSet',
+    'InventoryLotViewSet',
 ]

@@ -4,9 +4,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from common_utils.constants import APISchemaTags, DefaultAPIResponses
-from common_utils.permissions import HasStorekeeperGroupPermission
-from shops.models import Space
-from shops.serializers import SpaceRequestSerializer
+from common_utils.permissions import HasStorekeeperGroupPermission, HasCommodityExpertGroupPermission
+from shops.models import Space, InventoryLot
+from shops.serializers import SpaceRequestSerializer, InventoryLotRequestSerializer
 
 
 @extend_schema_view(
@@ -119,3 +119,108 @@ class SpaceViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsAuthenticated, HasStorekeeperGroupPermission]
         return [permission() for permission in permission_classes]
+
+
+@extend_schema_view(
+    create=extend_schema(
+        summary="Создать партию товара",
+        description='Создание новой партии товара',
+        tags=[APISchemaTags.INVENTORY],
+        request=InventoryLotRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_201_CREATED: InventoryLotRequestSerializer,
+        },
+    ),
+    list=extend_schema(
+        summary="Получить список партий товара",
+        description='Возвращает полный список всех партий товаров',
+        tags=[APISchemaTags.INVENTORY],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: InventoryLotRequestSerializer(many=True),
+        },
+    ),
+    retrieve=extend_schema(
+        summary="Получить партию товара по ID",
+        description="Возвращает детальную информацию о конкретной партии товара",
+        tags=[APISchemaTags.INVENTORY],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID партии товара',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: InventoryLotRequestSerializer,
+        },
+    ),
+    update=extend_schema(
+        summary="Обновить партию товара",
+        description='Полное обновление информации о партии товара',
+        tags=[APISchemaTags.INVENTORY],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID партии товара',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        request=InventoryLotRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: InventoryLotRequestSerializer,
+        },
+    ),
+    partial_update=extend_schema(
+        summary="Частично обновить партию товара",
+        description='Частичное обновление информации о партии товара',
+        tags=[APISchemaTags.INVENTORY],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID партии товара',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        request=InventoryLotRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: InventoryLotRequestSerializer,
+        },
+    ),
+    destroy=extend_schema(
+        summary="Удалить партию товара",
+        description='Удаление партии товара из системы',
+        tags=[APISchemaTags.INVENTORY],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID партии товара',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_204_NO_CONTENT: None,
+        },
+    ),
+)
+class InventoryLotViewSet(viewsets.ModelViewSet):
+    """CRUD операции для партий товаров"""
+
+    permission_classes = [IsAuthenticated, HasCommodityExpertGroupPermission]
+    authentication_classes = [JWTAuthentication]
+    queryset = InventoryLot.objects.all()
+    serializer_class = InventoryLotRequestSerializer
+    lookup_field = 'id'
