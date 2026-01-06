@@ -14,6 +14,9 @@ from .reference_books import (
     GetProduct,
     GetStorageProfile,
 )
+from .private import (
+    SpaceViewSet,
+)
 
 __all__ = [
     'GetProductUnit',
@@ -30,4 +33,5 @@ __all__ = [
     'GetWriteoffReason',
     'GetProduct',
     'GetStorageProfile',
+    'SpaceViewSet',
 ]
