@@ -23,6 +23,7 @@ class APISchemaTags:
     EMPLOYEES = 'Работники'
     SUPPLIES = 'Поставки'
     SHOPS = 'Магазины'
+    REFERENCE_BOOKS = 'Справочники'
 
 
 class DefaultAPIResponses:
