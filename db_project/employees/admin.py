@@ -17,6 +17,7 @@ from employees.models import (
     TimeSession,
     TimeDay,
     GlobalTimePolicy,
+    Workplace,
 )
 
 @admin.register(Passport)
@@ -47,6 +48,14 @@ class SalaryAdmin(admin.ModelAdmin):
 
     list_display = ['amount', 'job_position', 'working_rate', 'dt_created', 'dt_updated']
     raw_id_fields = ['job_position', 'working_rate']
+
+
+@admin.register(Workplace)
+class WorkplaceAdmin(admin.ModelAdmin):
+    """Админ для WorkPlace"""
+
+    list_display = ['id', 'storage', 'main_office_filial']
+    raw_id_fields = ['storage', 'main_office_filial']
 
 
 @admin.register(Employee)
