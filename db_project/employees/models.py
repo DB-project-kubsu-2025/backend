@@ -60,7 +60,7 @@ class JobPosition(AutoDateMixin):
 class Salary(AutoDateMixin):
     """Зарплата"""
 
-    amount = models.PositiveSmallIntegerField(verbose_name='Сумма')
+    amount = models.PositiveIntegerField(verbose_name='Сумма')
     job_position = models.ForeignKey(
         'JobPosition',
         verbose_name='Должность',

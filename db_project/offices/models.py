@@ -54,8 +54,8 @@ class MainOfficeFilial(AutoDateMixin):
     address = models.CharField(verbose_name='Адрес', max_length=128)
 
     class Meta:
-        verbose_name = 'Город'
-        verbose_name_plural = 'Города'
+        verbose_name = 'Филиал головного офиса'
+        verbose_name_plural = 'Филиалы головного офиса'
 
     def __str__(self):
         return f'Филиал ГК по адресу: {self.city.name} {self.address}'
