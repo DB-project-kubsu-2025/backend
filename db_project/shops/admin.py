@@ -125,7 +125,9 @@ class StorageAdmin(admin.ModelAdmin):
         'opened',
         'approved_by_main_company',
         'area',
+        'ml_service_id',
     ]
+    list_display_links = ['id', 'director']
     raw_id_fields = ['director', 'main_office_filial']
     list_filter = ['main_office_filial', 'opened']
 
