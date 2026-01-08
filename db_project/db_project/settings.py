@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'shops.apps.ShopsConfig',
     'supplies.apps.SuppliesConfig',
     'offices.apps.OfficesConfig',
+    'ml_service.apps.MlServiceConfig',
 ]
 
 MIDDLEWARE = [
