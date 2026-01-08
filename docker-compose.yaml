@@ -19,6 +19,7 @@ services:
       - redis
     networks:
       - db_project_network
+      - ml_service_network
 
   postgres:
     image: postgres:14
@@ -87,3 +88,5 @@ volumes:
 networks:
   db_project_network:
     driver: bridge
+  ml_service_network:
+    external: true

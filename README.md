@@ -23,12 +23,17 @@
    <ip-адрес> admin.crm.com
    ```
    и не забыть сохранить
-8. В том же терминале запустить команду:
+8. Создать docker networks двумя командами:
+    ```bash
+   docker network create db_project_network 
+   docker network create ml_service_network
+   ```
+9. В том же терминале запустить команду:
     ```bash
     docker compose up
     ```
 При переходе в браузере на страницу `https://crm.com/` должна отобразиться форма авторизации
-При переходе в браузере на страницу `https://crm.com/admin` можно попасть в админ-панель Django. На тестовом окружении логин и пароль суперпользователя: admin 1234
+При переходе в браузере на страницу `https://crm.com/admin` можно попасть в админ-панель Django. На тестовом окружении логин и пароль суперпользователя: `admin` `1234`
 
 ## Настройка интерпретатора в PyCharm Professional
 1. Settings -> Project -> Python Interpreter -> Add Interpreter -> On docker compose
