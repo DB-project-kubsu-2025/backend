@@ -188,6 +188,12 @@ class LeaveRequest(AutoDateMixin):
         max_length=30,
         db_index=True,
     )
+    type = models.ForeignKey(
+        'LeaveRequestType',
+        verbose_name='Тип',
+        on_delete=models.PROTECT,
+        related_name='leave_requests',
+    )
     start_date = models.DateField(verbose_name='Дата начала')
     end_date = models.DateField(verbose_name='Дата окончания')
     approved_at = models.DateTimeField(verbose_name='Дата подтверждения', null=True, blank=True)
