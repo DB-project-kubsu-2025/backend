@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/shops/', include('shops.urls')),
     path("api/supplies/", include("supplies.urls")),
     path('api/ml_service/', include('ml_service.urls')),
+    path("api/employees/", include("employees.urls")),
 ]
 
 if settings.DEBUG:
