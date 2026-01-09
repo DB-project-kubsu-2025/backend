@@ -11,10 +11,12 @@ from .request_serializers import (
     SupplyDiscrepancyRequestSerializer,
     DiscrepancyAttachmentRequestSerializer,
 )
+from .action_serializers import DecisionSerializer
 
 __all__ = [
     "SupplierRequestSerializer",
     "SupplierContactRequestSerializer",
     "SupplyContractRequestSerializer",
     "SupplyContractProductRequestSerializer",
+    "DecisionSerializer"
 ]
