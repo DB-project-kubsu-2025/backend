@@ -1,6 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from employees.views.private import UserGroupsView
 from employees.views.reference_books import (
     GetJobPosition,
     GetWorkingRate,
@@ -24,4 +25,5 @@ urlpatterns = [
     path('user-info/', UserInfoHookAPIView.as_view(), name='user-info-self'),
     # Получить данные пользователя по pk (только для staff/superuser или самого пользователя)
     path('user-info/<int:pk>/', UserInfoHookAPIView.as_view(), name='user-info-detail'),
+    path('user-groups', UserGroupsView.as_view(), name='user_groups'),
 ]

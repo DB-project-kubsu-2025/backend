@@ -1,6 +1,8 @@
-from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from common_utils.constants import APISchemaTags, DefaultAPIResponses
@@ -22,6 +24,7 @@ from employees.models import (
     TimeSession,
     TimeDay,
 )
+from employees.selectors import get_user_groups
 from employees.serializers.request_serializers import (
     PassportRequestSerializer,
     WorkingRateRequestSerializer,
@@ -119,41 +122,41 @@ class PassportViewSet(viewsets.ModelViewSet):
     create=extend_schema(
         summary="Создать должность",
         description="Создание новой должности",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         request=JobPositionRequestSerializer,
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_201_CREATED: JobPositionRequestSerializer},
     ),
     list=extend_schema(
         summary="Получить список должностей",
         description="Возвращает справочник должностей",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_200_OK: JobPositionRequestSerializer(many=True)},
     ),
     retrieve=extend_schema(
         summary="Получить должность по ID",
         description="Детальная информация по должности",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         parameters=[OpenApiParameter(name="id", description="ID должности", required=True, type=int, location=OpenApiParameter.PATH)],
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_200_OK: JobPositionRequestSerializer},
     ),
     update=extend_schema(
         summary="Обновить должность",
         description="Полное обновление должности",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         request=JobPositionRequestSerializer,
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_200_OK: JobPositionRequestSerializer},
     ),
     partial_update=extend_schema(
         summary="Частично обновить должность",
         description="Частичное обновление должности",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         request=JobPositionRequestSerializer,
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_200_OK: JobPositionRequestSerializer},
     ),
     destroy=extend_schema(
         summary="Удалить должность",
         description="Удаление должности из справочника",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_204_NO_CONTENT: None},
     ),
 )
@@ -175,41 +178,41 @@ class JobPositionViewSet(viewsets.ModelViewSet):
     create=extend_schema(
         summary="Создать рабочую ставку",
         description="Создание новой рабочей ставки",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         request=WorkingRateRequestSerializer,
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_201_CREATED: WorkingRateRequestSerializer},
     ),
     list=extend_schema(
         summary="Получить список рабочих ставок",
         description="Справочник рабочих ставок",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_200_OK: WorkingRateRequestSerializer(many=True)},
     ),
     retrieve=extend_schema(
         summary="Получить рабочую ставку по ID",
         description="Детальная информация по рабочей ставке",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         parameters=[OpenApiParameter(name="id", description="ID ставки", required=True, type=int, location=OpenApiParameter.PATH)],
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_200_OK: WorkingRateRequestSerializer},
     ),
     update=extend_schema(
         summary="Обновить рабочую ставку",
         description="Полное обновление рабочей ставки",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         request=WorkingRateRequestSerializer,
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_200_OK: WorkingRateRequestSerializer},
     ),
     partial_update=extend_schema(
         summary="Частично обновить рабочую ставку",
         description="Частичное обновление рабочей ставки",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         request=WorkingRateRequestSerializer,
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_200_OK: WorkingRateRequestSerializer},
     ),
     destroy=extend_schema(
         summary="Удалить рабочую ставку",
         description="Удаление рабочей ставки",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.EMPLOYEES],
+        tags=[APISchemaTags.EMPLOYEES],
         responses={**DefaultAPIResponses.RESPONSES, status.HTTP_204_NO_CONTENT: None},
     ),
 )
@@ -898,3 +901,45 @@ class TimeDayViewSet(viewsets.ModelViewSet):
         if user and not (user.is_staff or user.is_superuser):
             qs = qs.filter(employee_id=user.pk)
         return qs
+
+
+class UserGroupsView(APIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    @extend_schema(
+        summary='Получить группы пользователя',
+        description=(
+            'Возвращает список групп пользователя по его ID.\n\n'
+            'Формат ответа:\n'
+            '{ "<user_id>": ["group1", "group2"] }'
+        ),
+        parameters=[
+            OpenApiParameter(
+                name='user_id',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                description='ID пользователя (Employee)',
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                description='Список групп пользователя',
+                examples=[
+                    OpenApiExample(
+                        'Ответ',
+                        value={
+                            "123": ["director_group", "manager"],
+                        },
+                    ),
+                ],
+            ),
+            401: OpenApiResponse(description='Неавторизован'),
+        },
+        tags=[APISchemaTags.EMPLOYEES],
+    )
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        data = get_user_groups(user_id)
+        return Response(status=status.HTTP_200_OK, data=data)
