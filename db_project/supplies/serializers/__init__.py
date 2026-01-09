@@ -3,6 +3,13 @@ from .request_serializers import (
     SupplierContactRequestSerializer,
     SupplyContractRequestSerializer,
     SupplyContractProductRequestSerializer,
+    
+    SupplyRequestSerializer,
+    SupplyProductRequestSerializer,
+    SupplyProductLotRequestSerializer,
+    DiscrepancyReasonRequestSerializer,
+    SupplyDiscrepancyRequestSerializer,
+    DiscrepancyAttachmentRequestSerializer,
 )
 
 __all__ = [
