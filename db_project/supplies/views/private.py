@@ -34,6 +34,7 @@ from supplies.serializers import (
     DecisionSerializer
 )
 from supplies.services.workflow import set_discrepancy_decision
+from supplies.services.posting import post_supply_to_inventory
 
 
 class HasSuppliesWorkflowWritePermission(permissions.BasePermission):
@@ -440,15 +441,27 @@ class SupplyViewSet(viewsets.ModelViewSet):
     
     
     @extend_schema(summary="Одобрить (pending_approval -> approved)", request=None, responses={200: None})
-    @action(detail=True, methods=["post"], url_path="approve",
-            permission_classes=[HasMainOfficeGroupPermission])
+    @action(detail=True, methods=["post"], url_path="approve", permission_classes=[HasMainOfficeGroupPermission])
     def approve(self, request, pk=None):
         supply = self.get_object()
         if supply.status != Supply.PENDING_APPROVAL:
             return Response({"detail": "Нельзя approve не из pending_approval"}, status=400)
+        
         supply.status = Supply.APPROVED
         supply.save(update_fields=["status"])
-        return Response(status=200)
+        
+        actor_employee = getattr(request.user, "employee", None) or supply.received_by or supply.created_by
+        result = post_supply_to_inventory(supply, actor_employee)
+        
+        return Response(
+            {
+                "detail": "Поставка проведена",
+                "created_inventory_lots": result.created_inventory_lots,
+                "created_balances": result.created_balances,
+                "created_movements": result.created_movements,
+            },
+            status=200,
+        )
     
     
     @extend_schema(summary="Отклонить (pending_approval -> rejected)", request=DecisionSerializer, responses={200: None})
