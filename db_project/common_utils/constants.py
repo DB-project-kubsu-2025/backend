@@ -29,6 +29,7 @@ class APISchemaTags:
     INVENTORY = 'Поставки'
     PRODUCTS = 'Продукты'
     ML_SERVICE = 'АПИ для ml_service'
+    CATEGORIES = 'Категории продуктов'
 
 
 class DefaultAPIResponses:

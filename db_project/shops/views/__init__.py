@@ -11,7 +11,7 @@ from .reference_books import (
     GetStopListReason,
     GetStockTakeType,
     GetWriteoffReason,
-    GetProduct,
+    ProductViewSet,
     GetStorageProfile,
 )
 from .private import (
@@ -34,7 +34,7 @@ __all__ = [
     'GetStopListReason',
     'GetStockTakeType',
     'GetWriteoffReason',
-    'GetProduct',
+    'ProductViewSet',
     'GetStorageProfile',
     'StorageViewSet',
     'SpaceViewSet',

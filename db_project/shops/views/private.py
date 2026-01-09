@@ -9,9 +9,13 @@ from common_utils.permissions import (
     HasCommodityExpertGroupPermission,
     HasMainOfficeGroupPermission,
 )
-from shops.models import Space, InventoryLot, Storage, ProductMedia
-from shops.serializers import SpaceRequestSerializer, InventoryLotRequestSerializer, StorageRequestSerializer, \
-    ProductMediaRequestSerializer
+from shops.models import Space, InventoryLot, Storage, ProductMedia, Product
+from shops.serializers import (
+    SpaceRequestSerializer,
+    InventoryLotRequestSerializer,
+    StorageRequestSerializer,
+    ProductMediaRequestSerializer,
+)
 
 
 @extend_schema_view(

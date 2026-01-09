@@ -1,6 +1,6 @@
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
-from shops.models import Space, InventoryLot, Storage, ProductMedia
+from shops.models import Space, InventoryLot, Storage, ProductMedia, Product
 
 
 @extend_schema_serializer(
@@ -120,4 +120,42 @@ class InventoryLotRequestSerializer(serializers.ModelSerializer):
             'supply_product_lot',
             'manufacture_date',
             'expiry_date',
+        ]
+
+
+@extend_schema_serializer(
+    examples=[
+        OpenApiExample(
+            'Пример запроса на создание продукта',
+            description='Базовый запрос',
+            value={
+                'unit': 1,
+                'category': 2,
+                'name': 'Молоко пастеризованное',
+                'description': 'Молоко 3.2% жирности',
+                'expiration_days': 14,
+                'producer_name': 'ОАО "Молочный завод №1"',
+                'producer_code': '12345678-1234-1234-1234-123456789012',
+                'country_name': 'Россия',
+                'additional_info': 'Упаковка: тетрапак, 1 литр'
+            },
+            request_only=True,
+        ),
+    ],
+)
+class ProductRequestSerializer(serializers.ModelSerializer):
+    """Сериализатор запроса для создания/обновления Product"""
+
+    class Meta:
+        model = Product
+        fields = [
+            'unit',
+            'category',
+            'name',
+            'description',
+            'expiration_days',
+            'producer_name',
+            'producer_code',
+            'country_name',
+            'additional_info'
         ]

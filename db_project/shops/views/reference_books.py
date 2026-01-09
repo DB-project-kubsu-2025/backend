@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from common_utils.constants import APISchemaTags, DefaultAPIResponses
@@ -33,9 +33,10 @@ from shops.serializers import (
     PriceListTypeResponseSerializer,
     MovementTypeResponseSerializer,
     SpaceTypeResponseSerializer,
-    StorageTypeResponseSerializer, 
+    StorageTypeResponseSerializer,
     ProductResponseSerializer,
     StorageProfileResponseSerializer,
+    ProductRequestSerializer,
 )
 
 
@@ -82,7 +83,7 @@ class GetProductUnit(ReadOnlyModelViewSet):
     list=extend_schema(
         summary="Получить список категорий продуктов",
         description='Возвращает полный список всех категорий товаров из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
+        tags=[APISchemaTags.CATEGORIES],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: ProductUnitResponseSerializer(many=True),
@@ -91,7 +92,7 @@ class GetProductUnit(ReadOnlyModelViewSet):
     retrieve=extend_schema(
         summary="Получить категорию товара по ID",
         description="Возвращает детальную информацию о конкретной категории товара",
-        tags=["Справочники"],
+        tags=[APISchemaTags.CATEGORIES],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -118,19 +119,31 @@ class GetProductCategory(ReadOnlyModelViewSet):
 
 
 @extend_schema_view(
+    create=extend_schema(
+        summary="Создать продукт",
+        description='Создание нового продукта в справочнике',
+        tags=[APISchemaTags.SHOPS],
+        request=ProductResponseSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_201_CREATED: ProductResponseSerializer,
+        },
+    ),
     list=extend_schema(
+        operation_id='Получить список продуктов',
         summary="Получить список продуктов",
         description='Возвращает полный список всех продуктов из справочника',
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
+        tags=[APISchemaTags.SHOPS],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: ProductResponseSerializer(many=True),
         },
     ),
     retrieve=extend_schema(
+        operation_id='Получить продукт по ID',
         summary="Получить продукт по ID",
         description="Возвращает детальную информацию о конкретном продукте",
-        tags=[APISchemaTags.REFERENCE_BOOKS, APISchemaTags.SHOPS],
+        tags=[APISchemaTags.SHOPS],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -145,9 +158,65 @@ class GetProductCategory(ReadOnlyModelViewSet):
             status.HTTP_200_OK: ProductResponseSerializer,
         },
     ),
+    update=extend_schema(
+        summary="Обновить продукт",
+        description='Полное обновление информации о продукте',
+        tags=[APISchemaTags.SHOPS],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID продукта',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH,
+            ),
+        ],
+        request=ProductRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: ProductResponseSerializer,
+        },
+    ),
+    partial_update=extend_schema(
+        summary="Частично обновить продукт",
+        description='Частичное обновление информации о продукте',
+        tags=[APISchemaTags.SHOPS],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID продукта',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH,
+            ),
+        ],
+        request=ProductRequestSerializer,
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_200_OK: ProductResponseSerializer,
+        },
+    ),
+    destroy=extend_schema(
+        summary="Удалить продукт",
+        description='Удаление продукта из справочника',
+        tags=[APISchemaTags.SHOPS],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                description='ID продукта',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH,
+            ),
+        ],
+        responses={
+            **DefaultAPIResponses.RESPONSES,
+            status.HTTP_204_NO_CONTENT: None,
+        },
+    ),
 )
-class GetProduct(ReadOnlyModelViewSet):
-    """Получить данные из справочника продуктов"""
+class ProductViewSet(ModelViewSet):
+    """CRUD операции для справочника продуктов"""
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]

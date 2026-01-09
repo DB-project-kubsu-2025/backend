@@ -19,6 +19,7 @@ from .request_serializers import (
     ProductMediaRequestSerializer,
     SpaceRequestSerializer,
     InventoryLotRequestSerializer,
+    ProductRequestSerializer,
 )
 
 __all__ = [
@@ -40,4 +41,5 @@ __all__ = [
     'ProductMediaRequestSerializer',
     'SpaceRequestSerializer',
     'InventoryLotRequestSerializer',
+    'ProductRequestSerializer',
 ]
