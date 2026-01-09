@@ -100,6 +100,13 @@ class Workplace(AutoDateMixin):
         null=True,
         blank=True,
     )
+    working_rate = models.ForeignKey(
+        'WorkingRate',
+        verbose_name='Ставка',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         verbose_name = 'Рабочее место'
