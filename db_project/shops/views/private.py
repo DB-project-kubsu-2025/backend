@@ -9,7 +9,7 @@ from common_utils.permissions import (
     HasCommodityExpertGroupPermission,
     HasMainOfficeGroupPermission, HasSellerGroupPermission,
 )
-from shops.models import Space, InventoryLot, Storage, ProductMedia, Product, InventoryBalance, InventoryMovement, \
+from shops.models import Space, InventoryLot, Storage, ProductMedia, InventoryBalance, InventoryMovement, \
     PriceList, PriceListProduct, PricingConstraint, PricingRun, StorePrice, Coupon, SaleReceipt, SalesReceiptLine, \
     StopList, StopListProduct, StockTake, StockTakeLine, StockTakeAdjustment, WriteOffAct, WriteoffLine, \
     WriteoffAttachment, WriteoffPosting, ProductInventoryLot
@@ -17,19 +17,47 @@ from shops.serializers import (
     SpaceRequestSerializer,
     InventoryLotRequestSerializer,
     StorageRequestSerializer,
-    ProductMediaRequestSerializer, InventoryBalanceResponseSerializer, InventoryBalanceRequestSerializer,
-    InventoryMovementResponseSerializer, InventoryMovementRequestSerializer, PriceListResponseSerializer,
-    PriceListRequestSerializer, PriceListProductResponseSerializer, PriceListProductRequestSerializer,
-    PricingConstraintResponseSerializer, PricingConstraintRequestSerializer, PricingRunResponseSerializer,
-    PricingRunRequestSerializer, StorePriceResponseSerializer, StorePriceRequestSerializer, CouponResponseSerializer,
-    CouponRequestSerializer, SaleReceiptResponseSerializer, SaleReceiptRequestSerializer,
-    SalesReceiptLineResponseSerializer, SalesReceiptLineRequestSerializer, StopListResponseSerializer,
-    StopListRequestSerializer, StopListProductResponseSerializer, StopListProductRequestSerializer,
-    StockTakeResponseSerializer, StockTakeRequestSerializer, StockTakeLineResponseSerializer,
-    StockTakeLineRequestSerializer, StockTakeAdjustmentResponseSerializer, StockTakeAdjustmentRequestSerializer,
-    WriteOffActResponseSerializer, WriteOffActRequestSerializer, WriteoffLineResponseSerializer,
-    WriteoffLineRequestSerializer, WriteoffAttachmentResponseSerializer, WriteoffAttachmentRequestSerializer,
-    WriteoffPostingResponseSerializer, WriteoffPostingRequestSerializer, ProductInventoryLotRequestSerializer,
+    ProductMediaRequestSerializer,
+    InventoryBalanceResponseSerializer,
+    InventoryBalanceRequestSerializer,
+    InventoryMovementResponseSerializer,
+    InventoryMovementRequestSerializer,
+    PriceListResponseSerializer,
+    PriceListRequestSerializer,
+    PriceListProductResponseSerializer,
+    PriceListProductRequestSerializer,
+    PricingConstraintResponseSerializer,
+    PricingConstraintRequestSerializer,
+    PricingRunResponseSerializer,
+    PricingRunRequestSerializer,
+    StorePriceResponseSerializer,
+    StorePriceRequestSerializer,
+    CouponResponseSerializer,
+    CouponRequestSerializer,
+    SaleReceiptResponseSerializer,
+    SaleReceiptRequestSerializer,
+    SalesReceiptLineResponseSerializer,
+    SalesReceiptLineRequestSerializer,
+    StopListResponseSerializer,
+    StopListRequestSerializer,
+    StopListProductResponseSerializer,
+    StopListProductRequestSerializer,
+    StockTakeResponseSerializer,
+    StockTakeRequestSerializer,
+    StockTakeLineResponseSerializer,
+    StockTakeLineRequestSerializer,
+    StockTakeAdjustmentResponseSerializer,
+    StockTakeAdjustmentRequestSerializer,
+    WriteOffActResponseSerializer,
+    WriteOffActRequestSerializer,
+    WriteoffLineResponseSerializer,
+    WriteoffLineRequestSerializer,
+    WriteoffAttachmentResponseSerializer,
+    WriteoffAttachmentRequestSerializer,
+    WriteoffPostingResponseSerializer,
+    WriteoffPostingRequestSerializer,
+    ProductInventoryLotRequestSerializer, ProductInventoryLotResponseSerializer, StorageResponseSerializer,
+    ProductMediaResponseSerializer, InventoryLotResponseSerializer, SpaceResponseSerializer,
 )
 
 
@@ -134,7 +162,7 @@ class StorageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = Storage.objects.all()
-    serializer_class = StorageRequestSerializer
+    serializer_class = StorageResponseSerializer
     lookup_field = 'id'
 
 
@@ -248,7 +276,7 @@ class ProductMediaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = ProductMedia.objects.all()
-    serializer_class = ProductMediaRequestSerializer
+    serializer_class = ProductMediaResponseSerializer
     lookup_field = 'id'
 
     def get_queryset(self):
@@ -359,7 +387,7 @@ class SpaceViewSet(viewsets.ModelViewSet):
 
     authentication_classes = [JWTAuthentication]
     queryset = Space.objects.all()
-    serializer_class = SpaceRequestSerializer
+    serializer_class = SpaceResponseSerializer
     lookup_field = 'id'
 
     def get_permissions(self):
@@ -472,7 +500,7 @@ class InventoryLotViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, HasCommodityExpertGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = InventoryLot.objects.all()
-    serializer_class = InventoryLotRequestSerializer
+    serializer_class = InventoryLotResponseSerializer
     lookup_field = 'id'
 
 
@@ -2441,7 +2469,7 @@ class WriteoffPostingViewSet(viewsets.ModelViewSet):
         request=ProductInventoryLotRequestSerializer,
         responses={
             **DefaultAPIResponses.RESPONSES,
-            status.HTTP_201_CREATED: ProductInventoryLotRequestSerializer,
+            status.HTTP_201_CREATED: ProductInventoryLotResponseSerializer,
         },
     ),
     list=extend_schema(
@@ -2468,7 +2496,7 @@ class WriteoffPostingViewSet(viewsets.ModelViewSet):
         ],
         responses={
             **DefaultAPIResponses.RESPONSES,
-            status.HTTP_200_OK: ProductInventoryLotRequestSerializer,
+            status.HTTP_200_OK: ProductInventoryLotResponseSerializer,
         },
     ),
     update=extend_schema(
@@ -2487,7 +2515,7 @@ class WriteoffPostingViewSet(viewsets.ModelViewSet):
         request=ProductInventoryLotRequestSerializer,
         responses={
             **DefaultAPIResponses.RESPONSES,
-            status.HTTP_200_OK: ProductInventoryLotRequestSerializer,
+            status.HTTP_200_OK: ProductInventoryLotResponseSerializer,
         },
     ),
     partial_update=extend_schema(
@@ -2506,7 +2534,7 @@ class WriteoffPostingViewSet(viewsets.ModelViewSet):
         request=ProductInventoryLotRequestSerializer,
         responses={
             **DefaultAPIResponses.RESPONSES,
-            status.HTTP_200_OK: ProductInventoryLotRequestSerializer,
+            status.HTTP_200_OK: ProductInventoryLotResponseSerializer,
         },
     ),
     destroy=extend_schema(
@@ -2534,5 +2562,5 @@ class ProductInventoryLotViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, HasStorekeeperGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = ProductInventoryLot.objects.all()
-    serializer_class = ProductInventoryLotRequestSerializer
+    serializer_class = ProductInventoryLotResponseSerializer
     lookup_field = 'id'

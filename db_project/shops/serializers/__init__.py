@@ -1,4 +1,8 @@
 from .response_serializers import (
+    SpaceResponseSerializer,
+    InventoryLotResponseSerializer,
+    StorageResponseSerializer,
+    ProductMediaResponseSerializer,
     ProductUnitResponseSerializer,
     ProductCategoryResponseSerializer,
     StorageTypeResponseSerializer,
@@ -76,6 +80,10 @@ from .request_serializers import (
 )
 
 __all__ = [
+    'SpaceResponseSerializer',
+    'InventoryLotResponseSerializer',
+    'StorageResponseSerializer',
+    'ProductMediaResponseSerializer',
     'ProductUnitResponseSerializer',
     'ProductCategoryResponseSerializer',
     'StorageTypeResponseSerializer',

@@ -52,6 +52,151 @@ from shops.models import (
             value=[
                 {
                     'id': 1,
+                    'storage': 2,
+                    'space_type': 3,
+                    'parent_space': 4,
+                    'temp_min_c': 2,
+                    'temp_max_c': 6,
+                    'max_load': 100,
+                },
+                {
+                    'id': 2,
+                    'storage': 2,
+                    'space_type': 5,
+                    'parent_space': 1,
+                    'temp_min_c': -5,
+                    'temp_max_c': -2,
+                    'max_load': 200,
+                },
+            ],
+        ),
+    ],
+)
+class SpaceResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Space
+        fields = ['id', 'storage', 'space_type', 'parent_space', 'temp_min_c', 'temp_max_c', 'max_load']
+
+
+@extend_schema_serializer(
+    many=True,
+    examples=[
+        OpenApiExample(
+            'Пример ответа от сервера',
+            description='Базовый ответ',
+            value=[
+                {
+                    'id': 1,
+                    'product': 1,
+                    'supply_product_lot': 5,
+                    'manufacture_date': '2024-01-15',
+                    'expiry_date': '2024-02-15',
+                },
+                {
+                    'id': 2,
+                    'product': 2,
+                    'supply_product_lot': 6,
+                    'manufacture_date': '2024-01-16',
+                    'expiry_date': '2024-02-16',
+                },
+            ],
+        ),
+    ],
+)
+class InventoryLotResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InventoryLot
+        fields = ['id', 'product', 'supply_product_lot', 'manufacture_date', 'expiry_date']
+
+
+@extend_schema_serializer(
+    many=True,
+    examples=[
+        OpenApiExample(
+            'Пример ответа от сервера',
+            description='Базовый ответ',
+            value=[
+                {
+                    'id': 1,
+                    'director': 1,
+                    'main_office_filial': 2,
+                    'storage_type': 3,
+                    'cadastral_number': '77:01:0001001:1001',
+                    'approved_by_main_company': True,
+                    'opened': True,
+                    'area': 500,
+                    'utilization_percent': 75,
+                    'ml_service_id': 'storage_001',
+                },
+                {
+                    'id': 2,
+                    'director': 2,
+                    'main_office_filial': 3,
+                    'storage_type': 4,
+                    'cadastral_number': '77:01:0001001:1002',
+                    'approved_by_main_company': False,
+                    'opened': True,
+                    'area': 300,
+                    'utilization_percent': 60,
+                    'ml_service_id': 'storage_002',
+                },
+            ],
+        ),
+    ],
+)
+class StorageResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Storage
+        fields = [
+            'id',
+            'director',
+            'main_office_filial',
+            'storage_type',
+            'cadastral_number',
+            'approved_by_main_company',
+            'opened',
+            'area',
+            'utilization_percent',
+            'ml_service_id',
+        ]
+
+
+@extend_schema_serializer(
+    many=True,
+    examples=[
+        OpenApiExample(
+            'Пример ответа от сервера',
+            description='Базовый ответ',
+            value=[
+                {
+                    'id': 1,
+                    'product': 1,
+                    'image': '/media/products/image1.jpg',
+                },
+                {
+                    'id': 2,
+                    'product': 1,
+                    'image': '/media/products/image2.jpg',
+                },
+            ],
+        ),
+    ],
+)
+class ProductMediaResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductMedia
+        fields = ['id', 'product', 'image']
+
+
+@extend_schema_serializer(
+    many=True,
+    examples=[
+        OpenApiExample(
+            'Пример ответа от сервера',
+            description='Базовый ответ',
+            value=[
+                {
+                    'id': 1,
                     'name': 'шт',
                 },
                 {

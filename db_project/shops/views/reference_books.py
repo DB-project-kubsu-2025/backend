@@ -155,7 +155,7 @@ class ProductUnitViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = ProductUnit.objects.all()
-    serializer_class = ProductUnitRequestSerializer
+    serializer_class = ProductUnitResponseSerializer
     lookup_field = 'id'
 
 
@@ -260,7 +260,7 @@ class ProductCategoryViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = ProductCategory.objects.all()
-    serializer_class = ProductCategoryRequestSerializer
+    serializer_class = ProductCategoryResponseSerializer
     lookup_field = 'id'
 
 
@@ -365,7 +365,7 @@ class ProductViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     queryset = Product.objects.all()
-    serializer_class = ProductRequestSerializer
+    serializer_class = ProductResponseSerializer
     lookup_field = 'id'
 
 
@@ -470,7 +470,7 @@ class StorageProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = StorageProfile.objects.all()
-    serializer_class = StorageProfileRequestSerializer
+    serializer_class = StorageProfileResponseSerializer
     lookup_field = 'id'
 
 
@@ -575,7 +575,7 @@ class StorageTypeViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = StorageType.objects.all()
-    serializer_class = StorageTypeRequestSerializer
+    serializer_class = StorageTypeResponseSerializer
     lookup_field = 'id'
 
 
@@ -680,7 +680,7 @@ class SpaceTypeViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = SpaceType.objects.all()
-    serializer_class = SpaceTypeRequestSerializer
+    serializer_class = SpaceTypeResponseSerializer
     lookup_field = 'id'
 
 
@@ -785,7 +785,7 @@ class MovementTypeViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = MovementType.objects.all()
-    serializer_class = MovementTypeRequestSerializer
+    serializer_class = MovementTypeResponseSerializer
     lookup_field = 'id'
 
 
@@ -890,7 +890,7 @@ class PriceListTypeViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = PriceListType.objects.all()
-    serializer_class = PriceListTypeRequestSerializer
+    serializer_class = PriceListTypeResponseSerializer
     lookup_field = 'id'
 
 
@@ -995,7 +995,7 @@ class PriceListBaseViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = PriceListBase.objects.all()
-    serializer_class = PriceListBaseRequestSerializer
+    serializer_class = PriceListBaseResponseSerializer
     lookup_field = 'id'
 
 
@@ -1100,7 +1100,7 @@ class CouponDiscountTypeViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = CouponDiscountType.objects.all()
-    serializer_class = CouponDiscountTypeRequestSerializer
+    serializer_class = CouponDiscountTypeResponseSerializer
     lookup_field = 'id'
 
 
@@ -1205,7 +1205,7 @@ class PaymentMethodViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = PaymentMethod.objects.all()
-    serializer_class = PaymentMethodRequestSerializer
+    serializer_class = PaymentMethodResponseSerializer
     lookup_field = 'id'
 
 
@@ -1310,7 +1310,7 @@ class StopListReasonViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = StopListReason.objects.all()
-    serializer_class = StopListReasonRequestSerializer
+    serializer_class = StopListReasonResponseSerializer
     lookup_field = 'id'
 
 
@@ -1415,7 +1415,7 @@ class StockTakeTypeViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = StockTakeType.objects.all()
-    serializer_class = StockTakeTypeRequestSerializer
+    serializer_class = StockTakeTypeResponseSerializer
     lookup_field = 'id'
 
 
@@ -1520,5 +1520,5 @@ class WriteoffReasonViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
     authentication_classes = [JWTAuthentication]
     queryset = WriteoffReason.objects.all()
-    serializer_class = WriteoffReasonRequestSerializer
+    serializer_class = WriteoffReasonResponseSerializer
     lookup_field = 'id'
