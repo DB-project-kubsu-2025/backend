@@ -44,7 +44,7 @@ from shops.serializers import SpaceRequestSerializer, InventoryLotRequestSeriali
                 description='ID хранилища',
                 required=True,
                 type=int,
-                location=OpenApiParameter.PATH
+                location=OpenApiParameter.PATH,
             ),
         ],
         responses={

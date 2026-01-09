@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/auth_service/', include('auth_service.urls')),
     path('api/shops/', include('shops.urls')),
     path("api/supplies/", include("supplies.urls")),
+    path('api/ml_service/', include('ml_service.urls')),
 ]
 
 if settings.DEBUG:

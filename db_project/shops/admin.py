@@ -47,11 +47,36 @@ class ProductUnitAdmin(admin.ModelAdmin):
     list_display = ['id', 'name']
 
 
+@admin.action(description='Установить ml_service_category = HOBBIES')
+def set_ml_category_hobbies(modeladmin, request, queryset):
+    """Установить ml_service_category = HOBBIES"""
+    queryset.update(ml_service_category=ProductCategory.HOBBIES)
+
+
+@admin.action(description='Установить ml_service_category = FOODS')
+def set_ml_category_foods(modeladmin, request, queryset):
+    """Установить ml_service_category = FOODS"""
+    queryset.update(ml_service_category=ProductCategory.FOODS)
+
+
+@admin.action(description='Установить ml_service_category = HOUSEHOLD')
+def set_ml_category_household(modeladmin, request, queryset):
+    """Установить ml_service_category = HOUSEHOLD"""
+    queryset.update(ml_service_category=ProductCategory.HOUSEHOLD)
+
+
 @admin.register(ProductCategory)
 class ProductCategoryAdmin(admin.ModelAdmin):
     """Админ для ProductCategory"""
 
-    list_display = ['id', 'name']
+    list_display = ['id', 'name', 'ml_service_category']
+    search_fields = ('name', 'ml_service_category')
+    list_filter = ['ml_service_category']
+    actions = (
+        set_ml_category_hobbies,
+        set_ml_category_foods,
+        set_ml_category_household,
+    )
 
 
 @admin.register(Product)
@@ -100,7 +125,9 @@ class StorageAdmin(admin.ModelAdmin):
         'opened',
         'approved_by_main_company',
         'area',
+        'ml_service_id',
     ]
+    list_display_links = ['id', 'director']
     raw_id_fields = ['director', 'main_office_filial']
     list_filter = ['main_office_filial', 'opened']
 

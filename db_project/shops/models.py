@@ -19,9 +19,25 @@ class ProductUnit(AutoDateMixin):
 
 
 class ProductCategory(AutoDateMixin):
-    """Единица измерения"""
+    """Категория продукта"""
+
+    HOBBIES = 'HOBBIES'
+    FOODS = 'FOODS'
+    HOUSEHOLD = 'HOUSEHOLD'
+    CHOICES = {
+        HOBBIES: 'HOBBIES',
+        FOODS: 'FOODS',
+        HOUSEHOLD: 'HOUSEHOLD',
+    }
 
     name = models.CharField(verbose_name='Название', max_length=64, unique=True)
+    ml_service_category = models.CharField(
+        verbose_name='Категория для ml_service',
+        max_length=20,
+        choices=CHOICES,
+        default='',
+        blank=True,
+    )
 
     class Meta:
         verbose_name = 'Категория продукта'
@@ -168,6 +184,7 @@ class Storage(AutoDateMixin):
     opened = models.BooleanField(verbose_name='Действующий', default=False)
     area = models.PositiveSmallIntegerField(verbose_name='Площадь (в кв. м.)')
     utilization_percent = models.PositiveSmallIntegerField(verbose_name='Процент утилизации', null=True, blank=True)
+    ml_service_id = models.CharField(verbose_name='ID хранилища для ml_service', default='', blank=True)
 
     class Meta:
         verbose_name = 'Хранилище'

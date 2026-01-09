@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'shops.apps.ShopsConfig',
     'supplies.apps.SuppliesConfig',
     'offices.apps.OfficesConfig',
+    'ml_service.apps.MlServiceConfig',
 ]
 
 MIDDLEWARE = [
@@ -153,3 +154,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+ML_SERVICE_URL = env('ML_SERVICE_URL', default='')
