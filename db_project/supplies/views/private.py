@@ -1,10 +1,18 @@
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
-from rest_framework import status, viewsets, filters
+from rest_framework import status, viewsets, filters, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from common_utils.constants import APISchemaTags, DefaultAPIResponses
-from common_utils.permissions import HasMainOfficeGroupPermission
+from common_utils.permissions import (
+    HasMainOfficeGroupPermission,
+    HasCommodityExpertGroupPermission,
+    HasStorekeeperGroupPermission,
+    HasDirectorGroupPermission,
+)
 
 from supplies.models import (
     Supplier, SupplierContact, SupplyContract, SupplyContractProduct,
@@ -23,17 +31,9 @@ from supplies.serializers import (
     DiscrepancyReasonRequestSerializer,
     SupplyDiscrepancyRequestSerializer,
     DiscrepancyAttachmentRequestSerializer,
+    DecisionSerializer
 )
-
-from rest_framework import permissions
-from rest_framework.parsers import MultiPartParser, FormParser
-
-from common_utils.permissions import (
-    HasMainOfficeGroupPermission,
-    HasCommodityExpertGroupPermission,
-    HasStorekeeperGroupPermission,
-    HasDirectorGroupPermission,
-)
+from supplies.services.workflow import set_discrepancy_decision
 
 
 class HasSuppliesWorkflowWritePermission(permissions.BasePermission):
@@ -414,6 +414,74 @@ class SupplyViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated, HasSuppliesWorkflowWritePermission]
         return [p() for p in permission_classes]
     
+    @extend_schema(summary="Начать приёмку (draft -> in_receiving)", request=None, responses={200: None})
+    @action(detail=True, methods=["post"], url_path="start-receiving",
+            permission_classes=[HasStorekeeperGroupPermission | HasCommodityExpertGroupPermission | HasMainOfficeGroupPermission])
+    def start_receiving(self, request, pk=None):
+        supply = self.get_object()
+        if supply.status != Supply.DRAFT:
+            return Response({"detail": "Нельзя начать приёмку не из draft"}, status=400)
+        supply.status = Supply.IN_RECEIVING
+        supply.received_by = getattr(request.user, "employee", None)
+        supply.save(update_fields=["status", "received_by"])
+        return Response(status=200)
+    
+    
+    @extend_schema(summary="Отправить в ГК (in_receiving -> pending_approval)", request=None, responses={200: None})
+    @action(detail=True, methods=["post"], url_path="submit-to-hq",
+            permission_classes=[HasCommodityExpertGroupPermission | HasMainOfficeGroupPermission])
+    def submit_to_hq(self, request, pk=None):
+        supply = self.get_object()
+        if supply.status != Supply.IN_RECEIVING:
+            return Response({"detail": "Нельзя отправить в ГК не из in_receiving"}, status=400)
+        supply.status = Supply.PENDING_APPROVAL
+        supply.save(update_fields=["status"])
+        return Response(status=200)
+    
+    
+    @extend_schema(summary="Одобрить (pending_approval -> approved)", request=None, responses={200: None})
+    @action(detail=True, methods=["post"], url_path="approve",
+            permission_classes=[HasMainOfficeGroupPermission])
+    def approve(self, request, pk=None):
+        supply = self.get_object()
+        if supply.status != Supply.PENDING_APPROVAL:
+            return Response({"detail": "Нельзя approve не из pending_approval"}, status=400)
+        supply.status = Supply.APPROVED
+        supply.save(update_fields=["status"])
+        return Response(status=200)
+    
+    
+    @extend_schema(summary="Отклонить (pending_approval -> rejected)", request=DecisionSerializer, responses={200: None})
+    @action(detail=True, methods=["post"], url_path="reject",
+            permission_classes=[HasMainOfficeGroupPermission])
+    def reject(self, request, pk=None):
+        supply = self.get_object()
+        if supply.status != Supply.PENDING_APPROVAL:
+            return Response({"detail": "Нельзя reject не из pending_approval"}, status=400)
+        
+        ser = DecisionSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        
+        # если у тебя в Supply нет поля комментария — пропусти эту часть
+        if hasattr(supply, "decision_comment"):
+            supply.decision_comment = ser.validated_data.get("decision_comment", "")
+            
+        supply.status = Supply.REJECTED
+        supply.save()
+        return Response(status=200)
+    
+    
+    @extend_schema(summary="Закрыть (approved/rejected -> closed)", request=None, responses={200: None})
+    @action(detail=True, methods=["post"], url_path="close",
+            permission_classes=[HasCommodityExpertGroupPermission | HasMainOfficeGroupPermission])
+    def close(self, request, pk=None):
+        supply = self.get_object()
+        if supply.status not in (Supply.APPROVED, Supply.REJECTED):
+            return Response({"detail": "Нельзя закрыть не из approved/rejected"}, status=400)
+        supply.status = Supply.CLOSED
+        supply.save(update_fields=["status"])
+        return Response(status=200)
+    
     
 # ---------- SUPPLY PRODUCTS (строки поставки) ----------
     
@@ -509,6 +577,56 @@ class SupplyDiscrepancyViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsAuthenticated, HasSuppliesWorkflowWritePermission]
         return [p() for p in permission_classes]
+    
+    @extend_schema(summary="Отправить в ГК (open -> sent_to_hq)", request=None, responses={200: None})
+    @action(detail=True, methods=["post"], url_path="send-to-hq",
+            permission_classes=[HasCommodityExpertGroupPermission])
+    def send_to_hq(self, request, pk=None):
+        d = self.get_object()
+        if d.status != SupplyDiscrepancy.OPEN:
+            return Response({"detail": "Можно отправить только из open"}, status=400)
+        d.status = SupplyDiscrepancy.SENT_TO_HQ
+        d.save(update_fields=["status"])
+        return Response(status=200)
+    
+    
+    @extend_schema(summary="ГК: одобрить (sent_to_hq -> approved)", request=DecisionSerializer, responses={200: None})
+    @action(detail=True, methods=["post"], url_path="approve",
+            permission_classes=[HasMainOfficeGroupPermission])
+    def approve(self, request, pk=None):
+        d = self.get_object()
+        if d.status != SupplyDiscrepancy.SENT_TO_HQ:
+            return Response({"detail": "Можно approve только из sent_to_hq"}, status=400)
+        ser = DecisionSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        set_discrepancy_decision(d, request.user, SupplyDiscrepancy.APPROVED, ser.validated_data.get("decision_comment", ""))
+        return Response(status=200)
+    
+    
+    @extend_schema(summary="ГК: отклонить (sent_to_hq -> rejected)", request=DecisionSerializer, responses={200: None})
+    @action(detail=True, methods=["post"], url_path="reject",
+            permission_classes=[HasMainOfficeGroupPermission])
+    def reject(self, request, pk=None):
+        d = self.get_object()
+        if d.status != SupplyDiscrepancy.SENT_TO_HQ:
+            return Response({"detail": "Можно reject только из sent_to_hq"}, status=400)
+        ser = DecisionSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        set_discrepancy_decision(d, request.user, SupplyDiscrepancy.REJECTED, ser.validated_data.get("decision_comment", ""))
+        return Response(status=200)
+    
+    
+    @extend_schema(summary="Урегулировать (approved/rejected -> resolved)", request=DecisionSerializer, responses={200: None})
+    @action(detail=True, methods=["post"], url_path="resolve",
+            permission_classes=[HasCommodityExpertGroupPermission | HasMainOfficeGroupPermission])
+    def resolve(self, request, pk=None):
+        d = self.get_object()
+        if d.status not in (SupplyDiscrepancy.APPROVED, SupplyDiscrepancy.REJECTED):
+            return Response({"detail": "Можно resolve только из approved/rejected"}, status=400)
+        ser = DecisionSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        set_discrepancy_decision(d, request.user, SupplyDiscrepancy.RESOLVED, ser.validated_data.get("decision_comment", ""))
+        return Response(status=200)
     
     
 # ---------- DISCREPANCY ATTACHMENTS (multipart) ----------
