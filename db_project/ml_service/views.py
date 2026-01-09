@@ -3,9 +3,12 @@ from urllib.parse import urljoin
 
 import requests
 from django.conf import settings
-from django.db.models import Sum
-from django.db.models.functions import TruncDate
-from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.utils import (
+    extend_schema_view,
+    extend_schema,
+    OpenApiParameter,
+    OpenApiExample, OpenApiResponse,
+)
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -15,12 +18,13 @@ from common_utils.constants import DefaultAPIResponses, APISchemaTags
 from ml_service.constants import PredictionType
 from ml_service.selectors import get_data_for_prediction
 from ml_service.serializers import PredictionDataRequestSerializer
-from shops.models import ProductCategory, Storage, SaleReceipt, SalesReceiptLine
+from shops.models import ProductCategory, Storage
 
 
 @extend_schema_view(
     get=extend_schema(
         'Проверить доступность ml_service',
+        summary='Проверить доступность ml_service',
         tags=[APISchemaTags.ML_SERVICE],
         responses={
             status.HTTP_200_OK: {},
@@ -46,10 +50,167 @@ class MlServiceHealthCheck(APIView):
 
 @extend_schema_view(
     get=extend_schema(
-        'Проверить доступность ml_service',
+        'Получить результаты прогнозирования',
+        summary='Получить результаты прогнозирования',
         tags=[APISchemaTags.ML_SERVICE],
         responses={
-            status.HTTP_200_OK: {},
+            status.HTTP_200_OK: OpenApiResponse(
+                'Успешный ответ',
+                examples=[
+                    OpenApiExample(
+                        'Ответ при прогнозировании по одной категории',
+                        value={
+                            'status': 'string',
+                            'timestamp': 'string',
+                            'category_store_id': 'string',
+                            'forecast_days': 0,
+                            'predictions': [
+                                {
+                                    'date': 'string',
+                                    'value': 0,
+                                },
+                            ],
+                            'model_used': 'string',
+                            'statistics': {
+                                'mae': 0,
+                                'rmse': 0,
+                            },
+                            'metadata': {
+                                'additionalProp1': {},
+                            },
+                            'report': {
+                                'additionalProp1': {},
+                            },
+                        },
+                    ),
+                    OpenApiExample(
+                        'Ответ при пакетном прогнозировании',
+                        value={
+                            'status': 'success',
+                            'timestamp': 'string',
+                            'results': {
+                                'summary': {
+                                    'total': 0,
+                                    'successful': 0,
+                                    'failed': 0,
+                                    'success_rate': 0,
+                                },
+                                'successful_predictions': [
+                                    {
+                                        'category_store_id': 'FOODS/CA/1',
+                                        'forecast_days': 7,
+                                        'total_predicted': 12345.67,
+                                        'error': 'Not enough historical data',
+                                    },
+                                ],
+                                'failed_predictions': [
+                                    {
+                                        'category_store_id': 'FOODS/CA/1',
+                                        'forecast_days': 7,
+                                        'total_predicted': 12345.67,
+                                        'error': 'Not enough historical data',
+                                    },
+                                ],
+                            },
+                            'raw_results': {
+                                'additionalProp1': {
+                                    'status': 'string',
+                                    'timestamp': 'string',
+                                    'category_store_id': 'string',
+                                    'forecast_days': 0,
+                                    'predictions': [
+                                        {
+                                            'date': 'string',
+                                            'value': 0,
+                                        },
+                                    ],
+                                    'model_used': 'string',
+                                    'statistics': {
+                                        'mae': 0,
+                                        'rmse': 0,
+                                    },
+                                    'metadata': {
+                                        'additionalProp1': {},
+                                    },
+                                    'report': {
+                                        'additionalProp1': {},
+                                    },
+                                },
+                                'additionalProp2': {
+                                    'status': 'string',
+                                    'timestamp': 'string',
+                                    'category_store_id': 'string',
+                                    'forecast_days': 0,
+                                    'predictions': [
+                                        {
+                                            'date': 'string',
+                                            'value': 0,
+                                        },
+                                    ],
+                                    'model_used': 'string',
+                                    'statistics': {
+                                        'mae': 0,
+                                        'rmse': 0,
+                                    },
+                                    'metadata': {
+                                        'additionalProp1': {},
+                                    },
+                                    'report': {
+                                        'additionalProp1': {},
+                                    },
+                                },
+                                'additionalProp3': {
+                                    'status': 'string',
+                                    'timestamp': 'string',
+                                    'category_store_id': 'string',
+                                    'forecast_days': 0,
+                                    'predictions': [
+                                        {
+                                            'date': 'string',
+                                            'value': 0,
+                                        }
+                                    ],
+                                    'model_used': 'string',
+                                    'statistics': {
+                                        'mae': 0,
+                                        'rmse': 0,
+                                    },
+                                    'metadata': {
+                                        'additionalProp1': {},
+                                    },
+                                    'report': {
+                                        'additionalProp1': {},
+                                    },
+                                },
+                            },
+                        },
+                    ),
+                ],
+            ),
+            status.HTTP_422_UNPROCESSABLE_ENTITY: OpenApiResponse(
+                '',
+                examples=[
+                    OpenApiExample(
+                        '',
+                        value={
+                            'detail': [
+                                {
+                                    'type': 'list_type',
+                                    'loc': [
+                                        'body',
+                                        'historical_data',
+                                    ],
+                                    'msg': 'Input should be a valid list',
+                                    'input': {
+                                        'historical_data_items': [],
+                                    },
+                                    'url': 'https://errors.pydantic.dev/2.12/v/list_type',
+                                },
+                            ],
+                        },
+                    ),
+                ],
+            ),
             **DefaultAPIResponses.RESPONSES,
         },
         parameters=[
@@ -167,9 +328,10 @@ class GetPredictionData(APIView):
 
             response = requests.post(
                 urljoin(settings.ML_SERVICE_URL, '/prediction/one_category/'),
-                data=payload,
+                json=payload,
             )
-            return Response(status=status.HTTP_200_OK, data=response.json())
+            data = response.json()
+            return Response(status=response.status_code, data=data)
         elif prediction_type == PredictionType.PACKAGE:
             payload = {
                 'data_for_prediction_items': [],
@@ -187,8 +349,9 @@ class GetPredictionData(APIView):
                 )
             response = requests.get(
                 urljoin(settings.ML_SERVICE_URL, '/prediction/package/'),
-                data=payload,
+                json=payload,
             )
-            return Response(status=status.HTTP_200_OK, data=response.json())
+            data = response.json()
+            return Response(status=response.status_code, data=data)
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
