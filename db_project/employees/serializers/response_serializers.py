@@ -109,10 +109,11 @@ class SalaryResponseSerializer(serializers.ModelSerializer):
 class WorkplaceResponseSerializer(serializers.ModelSerializer):
     storage = serializers.PrimaryKeyRelatedField(read_only=True)
     main_office_filial = serializers.PrimaryKeyRelatedField(read_only=True)
+    working_rate = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Workplace
-        fields = ["id", "storage", "main_office_filial", "dt_created", "dt_updated"]
+        fields = ["id", "storage", "main_office_filial", 'working_rate', "dt_created", "dt_updated"]
 
 
 @extend_schema_serializer(

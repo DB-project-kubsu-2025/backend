@@ -56,7 +56,7 @@ class WorkplaceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Workplace
-        fields = ["id", "storage", "main_office_filial", "dt_created", "dt_updated"]
+        fields = ["id", "storage", "main_office_filial", 'working_rate', "dt_created", "dt_updated"]
 
 
 class UserFullSerializer(serializers.ModelSerializer):

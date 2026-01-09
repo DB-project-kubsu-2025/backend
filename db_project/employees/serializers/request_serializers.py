@@ -108,7 +108,7 @@ class SalaryRequestSerializer(serializers.ModelSerializer):
         OpenApiExample(
             "Пример запроса на создание рабочего места",
             description="Базовый запрос",
-            value={"storage": 1, "main_office_filial": None},
+            value={"storage": 1, "main_office_filial": None, 'working_rate': 1},
             request_only=True,
         )
     ]
@@ -116,7 +116,7 @@ class SalaryRequestSerializer(serializers.ModelSerializer):
 class WorkplaceRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workplace
-        fields = ["storage", "main_office_filial"]
+        fields = ["storage", "main_office_filial", 'working_rate']
 
 
 @extend_schema_serializer(
