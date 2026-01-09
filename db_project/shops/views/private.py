@@ -360,7 +360,7 @@ class SpaceViewSet(viewsets.ModelViewSet):
     create=extend_schema(
         summary="Создать партию товара",
         description='Создание новой партии товара',
-        tags=[APISchemaTags.INVENTORY],
+        tags=[APISchemaTags.SUPPLY],
         request=InventoryLotRequestSerializer,
         responses={
             **DefaultAPIResponses.RESPONSES,
@@ -370,7 +370,7 @@ class SpaceViewSet(viewsets.ModelViewSet):
     list=extend_schema(
         summary="Получить список партий товара",
         description='Возвращает полный список всех партий товаров',
-        tags=[APISchemaTags.INVENTORY],
+        tags=[APISchemaTags.SUPPLY],
         responses={
             **DefaultAPIResponses.RESPONSES,
             status.HTTP_200_OK: InventoryLotRequestSerializer(many=True),
@@ -379,7 +379,7 @@ class SpaceViewSet(viewsets.ModelViewSet):
     retrieve=extend_schema(
         summary="Получить партию товара по ID",
         description="Возвращает детальную информацию о конкретной партии товара",
-        tags=[APISchemaTags.INVENTORY],
+        tags=[APISchemaTags.SUPPLY],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -397,7 +397,7 @@ class SpaceViewSet(viewsets.ModelViewSet):
     update=extend_schema(
         summary="Обновить партию товара",
         description='Полное обновление информации о партии товара',
-        tags=[APISchemaTags.INVENTORY],
+        tags=[APISchemaTags.SUPPLY],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -416,7 +416,7 @@ class SpaceViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(
         summary="Частично обновить партию товара",
         description='Частичное обновление информации о партии товара',
-        tags=[APISchemaTags.INVENTORY],
+        tags=[APISchemaTags.SUPPLY],
         parameters=[
             OpenApiParameter(
                 name='id',
@@ -435,7 +435,7 @@ class SpaceViewSet(viewsets.ModelViewSet):
     destroy=extend_schema(
         summary="Удалить партию товара",
         description='Удаление партии товара из системы',
-        tags=[APISchemaTags.INVENTORY],
+        tags=[APISchemaTags.SUPPLY],
         parameters=[
             OpenApiParameter(
                 name='id',

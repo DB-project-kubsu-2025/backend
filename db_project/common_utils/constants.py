@@ -23,13 +23,19 @@ class APISchemaTags:
     EMPLOYEES = 'Работники'
     SUPPLIES = 'Поставки'
     SHOPS = 'Магазины'
-    REFERENCE_BOOKS = 'Справочники'
     STORAGES = 'Хранилища'
     SPACES = 'Места хранения'
-    INVENTORY = 'Поставки'
+    SUPPLY   = 'Поставки'
     PRODUCTS = 'Продукты'
     ML_SERVICE = 'АПИ для ml_service'
     CATEGORIES = 'Категории продуктов'
+    DISCOUNT_TYPES = 'Типы скидок'
+    MOVEMENT_TYPES = 'Типы перемещений'
+    PAYMENT_TYPES = 'Типы оплаты'
+    PRICE_LISTS = 'Прайс-листы'
+    STOP_LISTS = 'Стоп-листы'
+    INVENTORY = 'Инвентаризация'
+    WRITEOFF = 'Списания'
 
 
 class DefaultAPIResponses:
