@@ -1,3 +1,4 @@
+from django.db import transaction
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from rest_framework import status, viewsets, filters, permissions
 from rest_framework.decorators import action
@@ -52,6 +53,16 @@ class HasSuppliesWorkflowWritePermission(permissions.BasePermission):
                 "director_group",
             ]
         ).exists()
+
+def _as_bool(value):
+    if value is None:
+        return None
+    v = str(value).strip().lower()
+    if v in ("1", "true", "yes", "y", "on"):
+        return True
+    if v in ("0", "false", "no", "n", "off"):
+        return False
+    return None
 
 # ---------- SUPPLIERS ----------
 
@@ -391,11 +402,23 @@ class SupplyContractProductViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated, HasMainOfficeGroupPermission]
         return [p() for p in permission_classes]
 
-
+    
 # ---------- SUPPLIES (Документ поставки) ----------
     
 @extend_schema_view(
-    list=extend_schema(summary="Список поставок", tags=[APISchemaTags.SUPPLIES]),
+    list=extend_schema(
+        summary="Список поставок",
+        tags=[APISchemaTags.SUPPLIES],
+        parameters=[
+            OpenApiParameter(name="status", required=False, type=str, description="Фильтр по status"),
+            OpenApiParameter(name="storage", required=False, type=int, description="Фильтр по storage_id"),
+            OpenApiParameter(name="supply_contract", required=False, type=int, description="Фильтр по supply_contract_id"),
+            OpenApiParameter(name="created_by", required=False, type=int, description="Фильтр по created_by (employee_id)"),
+            OpenApiParameter(name="received_by", required=False, type=int, description="Фильтр по received_by (employee_id)"),
+            OpenApiParameter(name="planned_date_from", required=False, type=str, description="planned_date >= YYYY-MM-DD"),
+            OpenApiParameter(name="planned_date_to", required=False, type=str, description="planned_date <= YYYY-MM-DD"),
+        ],
+    ),
     retrieve=extend_schema(summary="Детали поставки", tags=[APISchemaTags.SUPPLIES]),
     create=extend_schema(summary="Создать поставку", tags=[APISchemaTags.SUPPLIES]),
     update=extend_schema(summary="Обновить поставку", tags=[APISchemaTags.SUPPLIES]),
@@ -408,6 +431,27 @@ class SupplyViewSet(viewsets.ModelViewSet):
     serializer_class = SupplyRequestSerializer
     lookup_field = "id"
     
+    def get_queryset(self):
+        qs = super().get_queryset()
+        p = self.request.query_params
+        
+        if p.get("status"):
+            qs = qs.filter(status=p["status"])
+        if p.get("storage"):
+            qs = qs.filter(storage_id=p["storage"])
+        if p.get("supply_contract"):
+            qs = qs.filter(supply_contract_id=p["supply_contract"])
+        if p.get("created_by"):
+            qs = qs.filter(created_by_id=p["created_by"])
+        if p.get("received_by"):
+            qs = qs.filter(received_by_id=p["received_by"])
+        if p.get("planned_date_from"):
+            qs = qs.filter(planned_date__gte=p["planned_date_from"])
+        if p.get("planned_date_to"):
+            qs = qs.filter(planned_date__lte=p["planned_date_to"])
+            
+        return qs
+    
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             permission_classes = [IsAuthenticated]
@@ -415,6 +459,75 @@ class SupplyViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated, HasSuppliesWorkflowWritePermission]
         return [p() for p in permission_classes]
     
+    # --- MIN: populate supply products from contract ---
+    @extend_schema(
+        summary="Заполнить поставку продуктами из договора",
+        description=(
+            "Создаёт строки SupplyProduct по всем SupplyContractProduct из supply.supply_contract.\n"
+            "Идемпотентно: повторный вызов не создаёт дубли."
+        ),
+        tags=[APISchemaTags.SUPPLIES],
+        request=None,
+        responses={200: dict},
+    )
+    @action(detail=True, methods=["post"], url_path="populate-from-contract")
+    def populate_from_contract(self, request, pk=None):
+        supply = self.get_object()
+        
+        # Не плодим мусор в “закрытом” документе
+        if supply.status in (Supply.APPROVED, Supply.REJECTED, Supply.CLOSED):
+            return Response(
+                {"detail": "Нельзя заполнять поставку в статусе approved/rejected/closed"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        contract_products = SupplyContractProduct.objects.select_related("product").filter(
+            supply_contract_id=supply.supply_contract_id
+        )
+        
+        existing_cp_ids = set(
+            SupplyProduct.objects.filter(supply_id=supply.id)
+            .values_list("supply_contract_product_id", flat=True)
+        )
+        
+        to_create = []
+        skipped = 0
+        
+        for cp in contract_products:
+            if cp.id in existing_cp_ids:
+                skipped += 1
+                continue
+            
+            to_create.append(
+                SupplyProduct(
+                    supply=supply,
+                    product=cp.product,
+                    supply_contract_product=cp,
+                    quantity_actual_total=0,          # обязателен в модели
+                    quantity_expected=cp.quantity,
+                    requires_review=True,
+                    status=SupplyProduct.HAS_ISSUES,
+                    purchase_price=cp.price,
+                )
+            )
+            
+        with transaction.atomic():
+            if to_create:
+                SupplyProduct.objects.bulk_create(to_create)
+                
+        return Response(
+            {
+                "detail": "SupplyProduct созданы из договора",
+                "supply_id": supply.id,
+                "contract_id": supply.supply_contract_id,
+                "created": len(to_create),
+                "skipped_existing": skipped,
+                "total_in_contract": contract_products.count(),
+            },
+            status=status.HTTP_200_OK,
+        )
+    
+    # --- workflow actions (как у тебя было) ---
     @extend_schema(summary="Начать приёмку (draft -> in_receiving)", request=None, responses={200: None})
     @action(detail=True, methods=["post"], url_path="start-receiving",
             permission_classes=[HasStorekeeperGroupPermission | HasCommodityExpertGroupPermission | HasMainOfficeGroupPermission])
@@ -475,7 +588,6 @@ class SupplyViewSet(viewsets.ModelViewSet):
         ser = DecisionSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         
-        # если у тебя в Supply нет поля комментария — пропусти эту часть
         if hasattr(supply, "decision_comment"):
             supply.decision_comment = ser.validated_data.get("decision_comment", "")
             
@@ -499,7 +611,16 @@ class SupplyViewSet(viewsets.ModelViewSet):
 # ---------- SUPPLY PRODUCTS (строки поставки) ----------
     
 @extend_schema_view(
-    list=extend_schema(summary="Список продуктов в поставках", tags=[APISchemaTags.SUPPLIES]),
+    list=extend_schema(
+        summary="Список продуктов в поставках",
+        tags=[APISchemaTags.SUPPLIES],
+        parameters=[
+            OpenApiParameter(name="supply", required=False, type=int, description="Фильтр по supply_id"),
+            OpenApiParameter(name="product", required=False, type=int, description="Фильтр по product_id"),
+            OpenApiParameter(name="status", required=False, type=str, description="Фильтр по status"),
+            OpenApiParameter(name="requires_review", required=False, type=str, description="true/false/1/0"),
+        ],
+    ),
     retrieve=extend_schema(summary="Детали продукта в поставке", tags=[APISchemaTags.SUPPLIES]),
     create=extend_schema(summary="Создать продукт в поставке", tags=[APISchemaTags.SUPPLIES]),
     update=extend_schema(summary="Обновить продукт в поставке", tags=[APISchemaTags.SUPPLIES]),
@@ -512,6 +633,23 @@ class SupplyProductViewSet(viewsets.ModelViewSet):
     serializer_class = SupplyProductRequestSerializer
     lookup_field = "id"
     
+    def get_queryset(self):
+        qs = super().get_queryset()
+        p = self.request.query_params
+        
+        if p.get("supply"):
+            qs = qs.filter(supply_id=p["supply"])
+        if p.get("product"):
+            qs = qs.filter(product_id=p["product"])
+        if p.get("status"):
+            qs = qs.filter(status=p["status"])
+            
+        b = _as_bool(p.get("requires_review"))
+        if b is not None:
+            qs = qs.filter(requires_review=b)
+            
+        return qs
+    
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             permission_classes = [IsAuthenticated]
@@ -523,7 +661,18 @@ class SupplyProductViewSet(viewsets.ModelViewSet):
 # ---------- SUPPLY PRODUCT LOTS (партии факт) ----------
     
 @extend_schema_view(
-    list=extend_schema(summary="Список партий (факт)", tags=[APISchemaTags.SUPPLIES]),
+    list=extend_schema(
+        summary="Список партий (факт)",
+        tags=[APISchemaTags.SUPPLIES],
+        parameters=[
+            OpenApiParameter(name="supply", required=False, type=int, description="Фильтр по supply_id"),
+            OpenApiParameter(name="supply_product", required=False, type=int, description="Фильтр по supply_product_id"),
+            OpenApiParameter(name="status", required=False, type=str, description="Фильтр по status"),
+            OpenApiParameter(name="packaging_condition", required=False, type=str, description="ok/damaged"),
+            OpenApiParameter(name="expiry_from", required=False, type=str, description="expiry_date_actual >= YYYY-MM-DD"),
+            OpenApiParameter(name="expiry_to", required=False, type=str, description="expiry_date_actual <= YYYY-MM-DD"),
+        ],
+    ),
     retrieve=extend_schema(summary="Детали партии (факт)", tags=[APISchemaTags.SUPPLIES]),
     create=extend_schema(summary="Создать партию (факт)", tags=[APISchemaTags.SUPPLIES]),
     update=extend_schema(summary="Обновить партию (факт)", tags=[APISchemaTags.SUPPLIES]),
@@ -535,6 +684,26 @@ class SupplyProductLotViewSet(viewsets.ModelViewSet):
     queryset = SupplyProductLot.objects.all()
     serializer_class = SupplyProductLotRequestSerializer
     lookup_field = "id"
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
+        p = self.request.query_params
+        
+        if p.get("supply_product"):
+            qs = qs.filter(supply_product_id=p["supply_product"])
+        if p.get("supply"):
+            qs = qs.filter(supply_product__supply_id=p["supply"])
+        if p.get("status"):
+            qs = qs.filter(status=p["status"])
+        if p.get("packaging_condition"):
+            qs = qs.filter(packaging_condition=p["packaging_condition"])
+            
+        if p.get("expiry_from"):
+            qs = qs.filter(expiry_date_actual__gte=p["expiry_from"])
+        if p.get("expiry_to"):
+            qs = qs.filter(expiry_date_actual__lte=p["expiry_to"])
+            
+        return qs
     
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
@@ -571,7 +740,19 @@ class DiscrepancyReasonViewSet(viewsets.ModelViewSet):
 # ---------- DISCREPANCIES ----------
     
 @extend_schema_view(
-    list=extend_schema(summary="Список несоответствий", tags=[APISchemaTags.SUPPLIES]),
+    list=extend_schema(
+        summary="Список несоответствий",
+        tags=[APISchemaTags.SUPPLIES],
+        parameters=[
+            OpenApiParameter(name="status", required=False, type=str, description="Фильтр по status"),
+            OpenApiParameter(name="reason", required=False, type=int, description="Фильтр по discrepancy_reason_id"),
+            OpenApiParameter(name="created_by", required=False, type=int, description="created_by (employee_id)"),
+            OpenApiParameter(name="decided_by", required=False, type=int, description="decided_by (employee_id)"),
+            OpenApiParameter(name="supply", required=False, type=int, description="Фильтр по supply_id"),
+            OpenApiParameter(name="supply_product", required=False, type=int, description="Фильтр по supply_product_id"),
+            OpenApiParameter(name="lot", required=False, type=int, description="Фильтр по supply_product_lot_id"),
+        ],
+    ),
     retrieve=extend_schema(summary="Детали несоответствия", tags=[APISchemaTags.SUPPLIES]),
     create=extend_schema(summary="Создать несоответствие", tags=[APISchemaTags.SUPPLIES]),
     update=extend_schema(summary="Обновить несоответствие", tags=[APISchemaTags.SUPPLIES]),
@@ -583,6 +764,28 @@ class SupplyDiscrepancyViewSet(viewsets.ModelViewSet):
     queryset = SupplyDiscrepancy.objects.all()
     serializer_class = SupplyDiscrepancyRequestSerializer
     lookup_field = "id"
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
+        p = self.request.query_params
+        
+        if p.get("status"):
+            qs = qs.filter(status=p["status"])
+        if p.get("reason"):
+            qs = qs.filter(discrepancy_reason_id=p["reason"])
+        if p.get("created_by"):
+            qs = qs.filter(created_by_id=p["created_by"])
+        if p.get("decided_by"):
+            qs = qs.filter(decided_by_id=p["decided_by"])
+            
+        if p.get("lot"):
+            qs = qs.filter(supply_product_lot_id=p["lot"])
+        if p.get("supply_product"):
+            qs = qs.filter(supply_product_lot__supply_product_id=p["supply_product"])
+        if p.get("supply"):
+            qs = qs.filter(supply_product_lot__supply_product__supply_id=p["supply"])
+            
+        return qs
     
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
@@ -645,7 +848,13 @@ class SupplyDiscrepancyViewSet(viewsets.ModelViewSet):
 # ---------- DISCREPANCY ATTACHMENTS (multipart) ----------
     
 @extend_schema_view(
-    list=extend_schema(summary="Список вложений", tags=[APISchemaTags.SUPPLIES]),
+    list=extend_schema(
+        summary="Список вложений",
+        tags=[APISchemaTags.SUPPLIES],
+        parameters=[
+            OpenApiParameter(name="discrepancy", required=False, type=int, description="Фильтр по supply_discrepancy_id"),
+        ],
+    ),
     retrieve=extend_schema(summary="Детали вложения", tags=[APISchemaTags.SUPPLIES]),
     create=extend_schema(summary="Загрузить вложение", tags=[APISchemaTags.SUPPLIES]),
     destroy=extend_schema(summary="Удалить вложение", tags=[APISchemaTags.SUPPLIES]),
@@ -656,6 +865,15 @@ class DiscrepancyAttachmentViewSet(viewsets.ModelViewSet):
     serializer_class = DiscrepancyAttachmentRequestSerializer
     lookup_field = "id"
     parser_classes = [MultiPartParser, FormParser]
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
+        p = self.request.query_params
+        
+        if p.get("discrepancy"):
+            qs = qs.filter(supply_discrepancy_id=p["discrepancy"])
+            
+        return qs
     
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
