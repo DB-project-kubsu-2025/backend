@@ -44,6 +44,7 @@ class PassportRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Passport
         fields = [
+            "id",
             "type",
             "series",
             "number",
@@ -68,7 +69,7 @@ class PassportRequestSerializer(serializers.ModelSerializer):
 class WorkingRateRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkingRate
-        fields = ["name", "monthly_output"]
+        fields = ["id", "name", "monthly_output"]
 
 
 @extend_schema_serializer(
@@ -84,7 +85,7 @@ class WorkingRateRequestSerializer(serializers.ModelSerializer):
 class JobPositionRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobPosition
-        fields = ["name"]
+        fields = ["id", "name"]
 
 
 @extend_schema_serializer(
@@ -100,7 +101,7 @@ class JobPositionRequestSerializer(serializers.ModelSerializer):
 class SalaryRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Salary
-        fields = ["amount", "job_position", "working_rate"]
+        fields = ["id", "amount", "job_position", "working_rate"]
 
 
 @extend_schema_serializer(
@@ -116,7 +117,7 @@ class SalaryRequestSerializer(serializers.ModelSerializer):
 class WorkplaceRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workplace
-        fields = ["storage", "main_office_filial", 'working_rate']
+        fields = ["id", "storage", "main_office_filial", 'working_rate']
 
 
 @extend_schema_serializer(
@@ -151,6 +152,7 @@ class EmployeeRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = [
+            "id",
             "username",
             "password",
             "first_name",
@@ -195,7 +197,7 @@ class EmployeeAdminRequestSerializer(EmployeeRequestSerializer):
 class LeaveRequestTypeRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveRequestType
-        fields = ["name", "counts_against_annual", "requires_documents", "documents_due_days"]
+        fields = ["id", "name", "counts_against_annual", "requires_documents", "documents_due_days"]
 
 
 @extend_schema_serializer(
@@ -218,7 +220,7 @@ class LeaveRequestTypeRequestSerializer(serializers.ModelSerializer):
 class LeaveRequestRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveRequest
-        fields = ["employee", "approved_by", "status",'type', "start_date", "end_date", "comment", "documents_received_at"]
+        fields = ["id", "employee", "approved_by", "status",'type', "start_date", "end_date", "comment", "documents_received_at"]
 
 
 @extend_schema_serializer(
@@ -234,7 +236,7 @@ class LeaveRequestRequestSerializer(serializers.ModelSerializer):
 class LeaveRequestAttachmentRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveRequestAttachment
-        fields = ["leave_request", "file"]
+        fields = ["id", "leave_request", "file"]
 
 
 @extend_schema_serializer(
@@ -250,7 +252,7 @@ class LeaveRequestAttachmentRequestSerializer(serializers.ModelSerializer):
 class AnnualLeaveBalanceRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnnualLeaveBalance
-        fields = ["employee", "year", "base_days", "carry_in_days", "manual_adjust_days"]
+        fields = ["id", "employee", "year", "base_days", "carry_in_days", "manual_adjust_days"]
 
 
 @extend_schema_serializer(
@@ -266,7 +268,7 @@ class AnnualLeaveBalanceRequestSerializer(serializers.ModelSerializer):
 class TimeEntryRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = TimeEntry
-        fields = ["employee", "date", "minutes", "comment"]
+        fields = ["id", "employee", "date", "minutes", "comment"]
 
 
 @extend_schema_serializer(
@@ -282,7 +284,7 @@ class TimeEntryRequestSerializer(serializers.ModelSerializer):
 class TimeSessionCloseReasonRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = TimeSessionCloseReason
-        fields = ["name"]
+        fields = ["id", "name"]
 
 
 @extend_schema_serializer(
@@ -298,7 +300,7 @@ class TimeSessionCloseReasonRequestSerializer(serializers.ModelSerializer):
 class TimeSessionRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = TimeSession
-        fields = ["employee", "close_reason", "closed", "login_at", "logout_at"]
+        fields = ["id", "employee", "close_reason", "closed", "login_at", "logout_at"]
 
 
 @extend_schema_serializer(
@@ -314,4 +316,4 @@ class TimeSessionRequestSerializer(serializers.ModelSerializer):
 class TimeDayRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = TimeDay
-        fields = ["employee", "date", "comment", "adjusted_minutes", "adjustment_reason"]
+        fields = ["id", "employee", "date", "comment", "adjusted_minutes", "adjustment_reason"]
